@@ -1,0 +1,15 @@
+{
+  "name": "salesforce-playwright-automation",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "playwright test",
+    "test:valid": "playwright test tests/ValidLogin.spec.js",
+    "test:invalid": "playwright test tests/InvalidLogin.spec.js",
+    "test:remember": "playwright test tests/RememberMe.spec.js",
+    "test:empty": "playwright test tests/EmptyCredentials.spec.js",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0"
+  }
+}
