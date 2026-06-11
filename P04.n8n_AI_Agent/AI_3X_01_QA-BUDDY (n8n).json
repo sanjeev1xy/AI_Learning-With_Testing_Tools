@@ -1,0 +1,101 @@
+{
+  "name": "AI_3X_01_QA-BUDDY",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e09ac4dd-f9ec-4800-8337-1a09c4c860a1",
+      "name": "When chat message received",
+      "webhookId": "48ec1b9d-b9b3-464e-a8ff-930a8ee6daf6"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e854f30b-971d-4e47-8940-675aedb9120d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        176
+      ],
+      "id": "b4e982f8-bda3-47fd-bb73-d85803264427",
+      "name": "QWEN Brain",
+      "credentials": {
+        "groqApi": {
+          "id": "TsVSjqCHYcHDuFTf",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QWEN Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7cabd8d9-fa6f-4f5c-a81f-21fea0955ecd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71f41778df52f798e205b49afd4ab05669d8d8aeb4ec5b665d58009b9ccaf023"
+  },
+  "nodeGroups": [],
+  "id": "HYhtdIsciJJ7KAou",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T03:44:35.220Z",
+      "createdAt": "2026-06-11T03:44:35.220Z",
+      "id": "ELH1Ew6m0nxDWh7i",
+      "name": "AI3XX"
+    }
+  ]
+}

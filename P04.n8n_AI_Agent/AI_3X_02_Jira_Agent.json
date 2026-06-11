@@ -1,0 +1,168 @@
+{
+  "name": "AI_3X_02_Jira_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a46a78ab-29bc-4716-a20d-eff8c7701f2e",
+      "name": "When chat message received",
+      "webhookId": "48ec1b9d-b9b3-464e-a8ff-930a8ee6daf6"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6756faab-a30b-4220-9873-1dc107f140f0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        176
+      ],
+      "id": "5439e03e-4fbd-455a-8d9e-9e7fa61ea233",
+      "name": "QWEN Brain",
+      "credentials": {
+        "groqApi": {
+          "id": "TsVSjqCHYcHDuFTf",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "QA Testing"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10009",
+          "mode": "list",
+          "cachedResultName": "Bug"
+        },
+        "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        544,
+        160
+      ],
+      "id": "61a57eb7-1185-4123-bbb3-e2fb2fc1ee5b",
+      "name": "Create Jira Ticket in QA Testing Project",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "Crc9txUGljeOKDMW",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        272,
+        224
+      ],
+      "id": "829ee1eb-002c-4a29-ac0e-af179af72704",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QWEN Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Ticket in QA Testing Project": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1c362a0e-b62f-440b-acf9-e7daff02836d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71f41778df52f798e205b49afd4ab05669d8d8aeb4ec5b665d58009b9ccaf023"
+  },
+  "nodeGroups": [],
+  "id": "fABdtX0Rh6x3Rc3E",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T03:44:35.220Z",
+      "createdAt": "2026-06-11T03:44:35.220Z",
+      "id": "ELH1Ew6m0nxDWh7i",
+      "name": "AI3XX"
+    }
+  ]
+}

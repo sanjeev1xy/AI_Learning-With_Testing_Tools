@@ -1,0 +1,468 @@
+{
+  "name": "AI_3X_04_Jira_Agent_Read_PRD_TestCases_Excel_V2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        -256
+      ],
+      "id": "4e5d7b59-c09c-4e0e-afcc-4411a16c9d9e",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        832
+      ],
+      "id": "19acca2a-da86-4c49-815f-4d0e989b290f",
+      "name": "Slack Trigger",
+      "webhookId": "c38aff7e-76c0-4005-bfc6-e36d4480e747",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "event": "newChatMessage",
+        "chatId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        400
+      ],
+      "id": "accdb44b-6cc5-4dea-b207-bec142264267",
+      "name": "Microsoft Teams Trigger",
+      "webhookId": "b8aa36c2-24f3-49d6-8cc2-2691ea82a670",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create test cases for Jira ticket {{ $json[\"Jira ID\"] }}. Follow these steps:\n\n1. Fetch the issue details from Jira using the ticket ID\n2. Analyze the requirements, description, and acceptance criteria\n3. Generate comprehensive test cases covering:\n   - Happy path scenarios\n   - Edge cases\n   - Negative test cases\n   - UI/UX validation\n\n4. For each test case, provide:\n   - Test Case ID (format: TC-XXX)\n   - Summary/Title\n   - Preconditions\n   - Test Steps (numbered)\n   - Expected Result\n   - Actual Result (leave empty)\n   - Status (set to \"Not Executed\")\n   - Priority (High/Medium/Low)\n   - Assignee (leave empty)\n   - Execution Date (leave empty)\n   - Comments/Notes\n\n5. Append each test case to the Google Sheet using the append/update tool",
+        "options": {
+          "systemMessage": "You are a QA Test Case Generator. Your job is to:\n1. Fetch Jira issue details using the provided ticket ID\n2. Generate comprehensive test cases based on requirements\n3. Write each test case to Google Sheets\n\nAlways use the tools provided. Generate at least 5-10 test cases per ticket covering different scenarios."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        80
+      ],
+      "id": "b8d5f552-4967-4cf9-b759-ffc153c4bc99",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        304
+      ],
+      "id": "d9dd83dd-fedc-4db7-87da-5b0d8188ee0e",
+      "name": "Brain",
+      "credentials": {
+        "groqApi": {
+          "id": "TsVSjqCHYcHDuFTf",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag",
+          "mode": "list",
+          "cachedResultName": "Vivo V7o TestCase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TC ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('TC_ID__using_to_match_', ``, 'string') }}",
+            "Summary  / Title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary____Title', ``, 'string') }}",
+            "Preconditions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Preconditions', ``, 'string') }}",
+            "Test Steps": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Test_Steps', ``, 'string') }}",
+            "Expected Result": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Expected_Result', ``, 'string') }}",
+            "Actual Result": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Actual_Result', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "Priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Priority', ``, 'string') }}",
+            "Assignee": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Assignee', ``, 'string') }}",
+            "Excution Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Excution_Date', ``, 'string') }}",
+            "Comments/Notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Comments_Notes', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "TC ID"
+          ],
+          "schema": [
+            {
+              "id": "TC ID",
+              "displayName": "TC ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary  / Title",
+              "displayName": "Summary  / Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preconditions",
+              "displayName": "Preconditions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Test Steps",
+              "displayName": "Test Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expected Result",
+              "displayName": "Expected Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actual Result",
+              "displayName": "Actual Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Excution Date",
+              "displayName": "Excution Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comments/Notes",
+              "displayName": "Comments/Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        304
+      ],
+      "id": "ee4c729f-c91f-4e13-b8e9-7a3de4e13dc2",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aVRQ6UzIWThLjeUE",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "issueKey": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Issue_Key', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        192,
+        304
+      ],
+      "id": "61556cf0-59d5-4c4b-9c2e-74e6822ba95c",
+      "name": "Fetch PRD by Jira Ticket ID",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "Crc9txUGljeOKDMW",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        624
+      ],
+      "id": "5b047dbd-55c8-4b29-8f2b-f0fda4647834",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "nZ0i0XAUfLSoV5aK",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload Jira IDs for Test Case Generation",
+        "formDescription": "Upload a CSV file containing Jira ticket IDs. The workflow will generate test cases for each ticket.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "CSV File with Jira IDs",
+              "fieldType": "file",
+              "fieldName": "csvFile",
+              "multipleFiles": false,
+              "acceptFileTypes": ".csv",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Your CSV has been received. Test cases are being generated..."
+            }
+          }
+        }
+      },
+      "id": "e2fd2016-357f-4dbe-901f-be819dd21c16",
+      "name": "Upload CSV with Jira IDs",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -736,
+        80
+      ],
+      "webhookId": "6700176c-f486-46ec-b991-4b892acfb534"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "csvFile",
+        "options": {
+          "headerRow": true,
+          "includeEmptyCells": false
+        }
+      },
+      "id": "f9cb9a50-1293-42da-801e-f8249000dba0",
+      "name": "Extract CSV Data",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5c0a71f3-38cf-40e9-9fdd-fe260fad4dde",
+      "name": "Loop Over Jira IDs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch PRD by Jira Ticket ID": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload CSV with Jira IDs": {
+      "main": [
+        [
+          {
+            "node": "Extract CSV Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CSV Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jira IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jira IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Jira IDs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b36a6b9b-c4f6-49bd-bca4-bfe337ba0ff2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71f41778df52f798e205b49afd4ab05669d8d8aeb4ec5b665d58009b9ccaf023"
+  },
+  "nodeGroups": [],
+  "id": "6bd1xZkYoyS4QHPN",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T03:44:35.220Z",
+      "createdAt": "2026-06-11T03:44:35.220Z",
+      "id": "ELH1Ew6m0nxDWh7i",
+      "name": "AI3XX"
+    }
+  ]
+}

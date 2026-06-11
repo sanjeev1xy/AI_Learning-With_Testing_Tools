@@ -1,0 +1,382 @@
+{
+  "name": "AI_3X_02_Jira_Agent_Read_PRD_TestCases_Excel",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -384,
+        -224
+      ],
+      "id": "6adc1929-87d7-4098-bd3e-b7c04772c9ae",
+      "name": "When chat message received",
+      "webhookId": "d7d7a50d-6f18-45b0-aad2-9963c8b4c0cb"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        -256
+      ],
+      "id": "45ab048a-500b-4180-933e-1951eb195802",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        96
+      ],
+      "id": "7edb412f-6a40-4090-bab9-c7be7298f134",
+      "name": "Slack Trigger",
+      "webhookId": "bfe05563-a658-40ea-a620-34b6740ac62d",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "event": "newChatMessage",
+        "chatId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeamsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -96
+      ],
+      "id": "05c6731e-56ef-49df-8ba2-085b4770de6c",
+      "name": "Microsoft Teams Trigger",
+      "webhookId": "0874d07d-3b1b-44ca-a652-a1ea041abb66",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a QA Test Case Generator assistant integrated with Jira and Google Sheets.\n\n## Your Primary Trigger\nWhenever the user's message contains the phrase \"create test case\" (case-insensitive), you MUST follow the full workflow below. Do not ask for confirmation — execute immediately.\n\n## Workflow: Create Test Case\n\n### Step 1 — Extract the Jira Ticket Key\n- Look for a Jira ticket key in the user's message. It follows the pattern: PROJECT-123 (e.g., PROJ-42, QA-7, BACKEND-201).\n- If no key is found, ask the user: \"Please provide the Jira ticket key (e.g., PROJ-123) to generate test cases.\"\n\n### Step 2 — Fetch the PRD/Issue from Jira\n- Use the \"Fetch PRD by Jira Ticket ID\" tool with the extracted ticket key.\n- Read the issue summary, description, and acceptance criteria carefully.\n\n### Step 3 — Generate Test Cases\nGenerate structured test cases based on the Jira issue. For each test case, include:\n- **Test Case ID**: TC-001, TC-002, etc.\n- **Title**: Short description of what is being tested\n- **Preconditions**: What must be true before the test\n- **Test Steps**: Numbered steps to execute\n- **Expected Result**: What should happen\n- **Priority**: High / Medium / Low\n- **Type**: Functional / Edge Case / Negative / UI\n\nCover: happy path, edge cases, and negative scenarios.\n\n### Step 4 — Append to Google Sheet\n- Use the \"Append or update row in sheet\" tool to write each test case as a row.\n- Map columns as: Test Case ID | Title | Preconditions | Steps | Expected Result | Priority | Type | Jira Ticket | Date Created\n\n### Step 5 — Confirm to User\nReply with a summary like:\n\"✅ Generated [N] test cases for [TICKET-KEY] and appended them to your sheet.\"\nList the test case titles so the user knows what was created.\n\n## Other Interactions\nFor any message that does NOT contain \"create test case\", respond as a helpful QA assistant. You can answer questions about testing best practices, explain test types, or help the user refine requirements."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        -224
+      ],
+      "id": "b3c6267e-5492-4ddd-96d7-9a13ef92e600",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "6ab0f1ae-8092-455b-a872-11e9cbbbb1f8",
+      "name": "Brain",
+      "credentials": {
+        "groqApi": {
+          "id": "TsVSjqCHYcHDuFTf",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag",
+          "mode": "list",
+          "cachedResultName": "Vivo V7o TestCase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OEwMlu6cTssHZVbgoam7z1-DgRyuPg6aZz2c94jH5Ag/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TC ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('TC_ID__using_to_match_', ``, 'string') }}",
+            "Summary  / Title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary____Title', ``, 'string') }}",
+            "Preconditions": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Preconditions', ``, 'string') }}",
+            "Test Steps": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Test_Steps', ``, 'string') }}",
+            "Expected Result": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Expected_Result', ``, 'string') }}",
+            "Actual Result": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Actual_Result', ``, 'string') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "Priority": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Priority', ``, 'string') }}",
+            "Assignee": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Assignee', ``, 'string') }}",
+            "Excution Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Excution_Date', ``, 'string') }}",
+            "Comments/Notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Comments_Notes', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "TC ID"
+          ],
+          "schema": [
+            {
+              "id": "TC ID",
+              "displayName": "TC ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary  / Title",
+              "displayName": "Summary  / Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Preconditions",
+              "displayName": "Preconditions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Test Steps",
+              "displayName": "Test Steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expected Result",
+              "displayName": "Expected Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actual Result",
+              "displayName": "Actual Result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Excution Date",
+              "displayName": "Excution Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comments/Notes",
+              "displayName": "Comments/Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        48
+      ],
+      "id": "e7bc35ff-e088-4819-800b-f56e8badfcf9",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "aVRQ6UzIWThLjeUE",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "issueKey": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Issue_Key', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jiraTool",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -16
+      ],
+      "id": "e81b1822-b117-4e92-a93b-7e8b37c7cdef",
+      "name": "Fetch PRD by Jira Ticket ID",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "Crc9txUGljeOKDMW",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "5f1c1bf5-34d2-43f6-aeae-d3a914b32713",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "nZ0i0XAUfLSoV5aK",
+          "name": "DeepSeek account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch PRD by Jira Ticket ID": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "74853b43-e8a0-4c0e-9ce4-d64d0b6fab91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71f41778df52f798e205b49afd4ab05669d8d8aeb4ec5b665d58009b9ccaf023"
+  },
+  "nodeGroups": [],
+  "id": "BRVDqAl33Fgb50Yi",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T03:44:35.220Z",
+      "createdAt": "2026-06-11T03:44:35.220Z",
+      "id": "ELH1Ew6m0nxDWh7i",
+      "name": "AI3XX"
+    }
+  ]
+}
