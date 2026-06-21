@@ -1,0 +1,7 @@
+{
+  "/page": "app/page.js",
+  "/api/calendar/route": "app/api/calendar/route.js",
+  "/api/today/route": "app/api/today/route.js",
+  "/api/status/route": "app/api/status/route.js",
+  "/api/run/route": "app/api/run/route.js"
+}

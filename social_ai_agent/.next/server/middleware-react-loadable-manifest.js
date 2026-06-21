@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"components\\\\ContentTabs.tsx -> react-markdown\":{\"id\":\"components\\\\ContentTabs.tsx -> react-markdown\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_react-markdown_index_js.js\"]}}"
