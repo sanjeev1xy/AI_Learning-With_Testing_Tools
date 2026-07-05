@@ -1,6 +1,10 @@
-backend/venv/
+backend/node_modules/
 backend/.env
 backend/chroma_db/
-backend/__pycache__/
 frontend/node_modules/
 frontend/dist/
+
+# personal test-upload files (contain PII / secrets) — not for the public repo
+data/C_R_J_Sanjeev_Resume *.pdf
+data/PRAMOD_FEB_RESUME.pdf
+data/AI Engineering.txt
