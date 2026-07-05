@@ -1,0 +1,210 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4c1d95 0%, #1d4ed8 30%, #0d9488 60%, #be185d 100%);
+  background-attachment: fixed;
+  color: #f5f5f7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  background: linear-gradient(90deg, #5b8def, #c084fc, #3fbf6f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  color: #9aa0ab;
+  margin: 0 0 32px;
+  font-size: 14px;
+}
+
+.panel {
+  background: rgba(15, 17, 21, 0.72);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.stages {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stage {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  padding: 10px 8px;
+  border-radius: 8px;
+  background: #1e2230;
+  border: 1px solid #2c3140;
+  color: #7a808c;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.stage.active {
+  border-color: #5b8def;
+  color: #5b8def;
+  animation: pulse 1s infinite;
+}
+
+.stage.done {
+  border-color: #3fbf6f;
+  color: #3fbf6f;
+  background: #142a1e;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.primary-btn {
+  background: #5b8def;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  background: #3a4256;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 14px;
+}
+
+.ingest-result {
+  margin-top: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  background: #1e2230;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #7a808c;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stat-value {
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.chunks-preview summary {
+  cursor: pointer;
+  color: #9aa0ab;
+  font-size: 13px;
+}
+
+.chunks-preview ol {
+  font-size: 13px;
+  color: #b0b5bf;
+  line-height: 1.6;
+}
+
+.query-form {
+  display: flex;
+  gap: 10px;
+}
+
+.query-form input {
+  flex: 1;
+  background: #1e2230;
+  border: 1px solid #2c3140;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #e6e6e6;
+  font-size: 14px;
+}
+
+.query-result {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chunks-block h3,
+.answer-block h3 {
+  font-size: 14px;
+  color: #9aa0ab;
+  margin-bottom: 10px;
+}
+
+.chunk-card {
+  background: #1e2230;
+  border: 1px solid #2c3140;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.chunk-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #7a808c;
+}
+
+.similarity {
+  color: #5b8def;
+}
+
+.answer-block {
+  background: #142a1e;
+  border: 1px solid #1f4a30;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.answer-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 14px;
+}
