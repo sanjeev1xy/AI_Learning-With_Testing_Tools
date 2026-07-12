@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="layout" style="grid-template-columns: 1fr;">
+  <div class="pane">
+    <h2>Chunk viewer</h2>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+      <input type="search" id="searchBox" placeholder="Search chunk text&hellip;" style="flex:1; min-width:200px;" />
+      <select id="priorityFilter"><option value="">All priorities</option></select>
+      <select id="moduleFilter"><option value="">All modules</option></select>
+      <button class="btn" id="applyFilters">Apply</button>
+    </div>
+    <p class="empty-hint" id="totalHint"></p>
+    <div id="chunkList"></div>
+    <div class="pagination">
+      <button class="btn-ghost" id="prevPage">&larr; Prev</button>
+      <button class="btn-ghost" id="nextPage">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const PRIORITIES = ['Blocker', 'Critical', 'High', 'Medium', 'Low'];
+const MODULES = ['Authentication','Booking CRUD','Search & Filters','Payment & Checkout','Notifications','User Profile','Admin Dashboard','API Integration','Performance','Security','Mobile App','Accessibility','Localization','Reporting & Analytics','File Upload','Session Management','Rate Limiting','Data Validation','Third-Party Integration','Regression Suite'];
+
+document.getElementById('priorityFilter').innerHTML += PRIORITIES.map((p) => `<option value="${p}">${p}</option>`).join('');
+document.getElementById('moduleFilter').innerHTML += MODULES.map((m) => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+
+let offsetStack = [null];
+let currentOffset = null;
+
+function usedChunkIds() {
+  try { return JSON.parse(localStorage.getItem('lastUsedChunkIds') || '[]'); } catch { return []; }
+}
+
+async function loadChunks(offset) {
+  const q = document.getElementById('searchBox').value;
+  const priority = document.getElementById('priorityFilter').value;
+  const module = document.getElementById('moduleFilter').value;
+  const params = new URLSearchParams({ limit: 50 });
+  if (offset) params.set('offset', offset);
+  if (q) params.set('q', q);
+  if (priority) params.set('priority', priority);
+  if (module) params.set('module', module);
+
+  const res = await fetch('/api/chunks?' + params.toString());
+  const data = await res.json();
+
+  document.getElementById('totalHint').textContent = `${data.total} total points in the collection`;
+  const used = new Set(usedChunkIds());
+
+  document.getElementById('chunkList').innerHTML = data.results.map((r) => `
+    <div class="card chunk-card ${used.has(r.id) ? 'highlighted' : ''}">
+      <h3>#${r.id} &middot; ${escapeHtml(r.payload.jira_id || '')} &middot; <span class="pill">${escapeHtml(r.payload.priority || '')}</span></h3>
+      <p class="empty-hint">${escapeHtml(r.payload.module || '')}</p>
+      <div class="chunk-text">${escapeHtml(r.payload.text || '')}</div>
+      <details style="margin-top:8px;">
+        <summary class="details-toggle">Vector preview</summary>
+        <p class="mono" style="font-size:11px;">dense[:8] = [${r.dense_preview.join(', ')}]</p>
+        <p class="mono" style="font-size:11px;">sparse top-5 = ${r.sparse_preview.map((s) => `#${s.token_id}:${s.weight}`).join(', ')}</p>
+      </details>
+    </div>
+  `).join('') || '<p class="empty-hint">No chunks match.</p>';
+
+  document.getElementById('nextPage').dataset.offset = data.next_offset ?? '';
+  document.getElementById('nextPage').disabled = !data.next_offset;
+}
+
+document.getElementById('applyFilters').addEventListener('click', () => { offsetStack = [null]; loadChunks(null); });
+document.getElementById('nextPage').addEventListener('click', () => {
+  const next = document.getElementById('nextPage').dataset.offset;
+  if (!next) return;
+  offsetStack.push(next);
+  loadChunks(next);
+});
+document.getElementById('prevPage').addEventListener('click', () => {
+  if (offsetStack.length <= 1) return;
+  offsetStack.pop();
+  loadChunks(offsetStack[offsetStack.length - 1]);
+});
+
+loadChunks(null);
+</script>
+{% endblock %}

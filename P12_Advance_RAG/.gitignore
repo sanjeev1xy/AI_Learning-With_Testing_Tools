@@ -1,0 +1,9 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+qdrant_data/
+data/*.csv
+data/*.xlsx
+data/*.xls
+!testcase/test_cases.csv

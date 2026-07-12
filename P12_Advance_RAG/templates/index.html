@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 760px; margin: 60px auto; text-align: center; padding: 0 20px;">
+  <h1 style="font-size: 32px; margin-bottom: 8px;">Advanced RAG Explorer</h1>
+  <p style="color: var(--text-dim); font-size: 15px; margin-bottom: 32px;">
+    Hybrid dense + sparse retrieval (bge-m3) &middot; Qdrant &middot; cross-encoder re-ranking
+    (bge-reranker-v2-m3) &middot; query rewriting &middot; grounded generation on 5,000 JIRA test cases.
+  </p>
+  <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+    <a class="btn" href="/upload">1. Upload a dataset</a>
+    <a class="btn-ghost" href="/ingest">2. Ingest</a>
+    <a class="btn-ghost" href="/chunks">3. Browse chunks</a>
+    <a class="btn-ghost" href="/chat">4. Chat</a>
+  </div>
+  <p style="margin-top: 28px;">
+    <a href="/static/explainer.html" target="_blank">Read the architecture explainer &rarr;</a>
+  </p>
+</div>
+{% endblock %}
