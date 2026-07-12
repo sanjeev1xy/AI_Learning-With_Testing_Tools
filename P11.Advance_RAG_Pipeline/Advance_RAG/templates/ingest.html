@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="layout">
+  <div class="pane pane-sticky">
+    <h2>Pipeline</h2>
+    <div class="stage-list">
+      <div class="stage-item" data-stage="read"><span class="num">1</span><div><div class="label">Read</div><div class="sub">CSV / XLSX &rarr; rows</div></div></div>
+      <div class="stage-item" data-stage="build_docs"><span class="num">2</span><div><div class="label">Build docs</div><div class="sub">rows &rarr; documents</div></div></div>
+      <div class="stage-item" data-stage="chunk"><span class="num">3</span><div><div class="label">Chunk</div><div class="sub">split &amp; overlap</div></div></div>
+      <div class="stage-item" data-stage="embed"><span class="num">4</span><div><div class="label">Embed</div><div class="sub">bge-m3 dense + sparse</div></div></div>
+      <div class="stage-item" data-stage="index"><span class="num">5</span><div><div class="label">Index</div><div class="sub">Qdrant collection</div></div></div>
+    </div>
+    <button class="btn" id="startBtn" style="margin-top:18px; width:100%;">Start Ingestion</button>
+  </div>
+
+  <div class="pane" id="detailPane">
+    <h2>Live detail</h2>
+    <p class="empty-hint" id="emptyHint">Click "Start Ingestion" to read, chunk, embed (bge-m3), and index the dataset into Qdrant.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const params = new URLSearchParams(window.location.search);
+const filename = params.get('filename') || '';
+const textCols = params.get('text_cols') || 'title,steps,expected,tags';
+const metaCols = params.get('meta_cols') || 'id,jira_id,priority,module';
+
+function addCard(html) {
+  document.getElementById('emptyHint')?.remove();
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = html;
+  document.getElementById('detailPane').appendChild(div);
+}
+
+function histogramHtml(hist) {
+  const max = Math.max(1, ...Object.values(hist));
+  return Object.entries(hist).sort().map(([bucket, count]) => `
+    <div class="hist-bar-row">
+      <span class="lbl">${bucket}</span>
+      <div class="bar" style="width:${(count / max * 200).toFixed(0)}px"></div>
+      <span>${count}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('startBtn').disabled = true;
+  const url = `/api/ingest?filename=${encodeURIComponent(filename)}&text_cols=${encodeURIComponent(textCols)}&meta_cols=${encodeURIComponent(metaCols)}`;
+  const es = new EventSource(url);
+
+  es.onmessage = (e) => {
+    const event = JSON.parse(e.data);
+    const { stage, status, data } = event;
+
+    if (stage === 'complete') {
+      es.close();
+      document.getElementById('startBtn').textContent = 'Done — go to Chat';
+      document.getElementById('startBtn').onclick = () => window.location.href = '/chat';
+      document.getElementById('startBtn').disabled = false;
+      return;
+    }
+    if (stage === 'error') {
+      es.close();
+      addCard(`<h3>Error</h3><p class="error">${escapeHtml(data.message)}</p>`);
+      document.getElementById('startBtn').disabled = false;
+      return;
+    }
+
+    if (status === 'start') setStageState(stage, 'active');
+    if (status === 'done') setStageState(stage, 'done');
+
+    if (stage === 'read' && status === 'done') {
+      addCard(`
+        <h3>1 &middot; Read</h3>
+        <div class="stat-grid">
+          <div class="stat"><div class="v">${data.row_count}</div><div class="k">Rows</div></div>
+          <div class="stat"><div class="v">${data.columns.length}</div><div class="k">Columns</div></div>
+        </div>
+        <p class="mono">${data.columns.map(escapeHtml).join(', ')}</p>
+      `);
+    }
+    if (stage === 'chunk' && status === 'done') {
+      addCard(`
+        <h3>3 &middot; Chunk</h3>
+        <div class="stat-grid">
+          <div class="stat"><div class="v">${data.total_chunks}</div><div class="k">Chunks</div></div>
+          <div class="stat"><div class="v">${data.avg_chars}</div><div class="k">Avg chars</div></div>
+          <div class="stat"><div class="v">${data.min_chars}</div><div class="k">Min</div></div>
+          <div class="stat"><div class="v">${data.max_chars}</div><div class="k">Max</div></div>
+        </div>
+        ${histogramHtml(data.histogram)}
+        <h3 style="margin-top:14px;">Sample chunks</h3>
+        ${data.sample_chunks.map((c) => `<div class="chunk-text" style="margin-bottom:8px;">${escapeHtml(c)}</div>`).join('')}
+      `);
+    }
+    if (stage === 'embed' && status === 'progress') {
+      let bar = document.getElementById('embedProgress');
+      if (!bar) {
+        addCard(`<h3>4 &middot; Embed</h3><div id="embedProgressWrap"><div class="hist-bar-row"><span class="lbl" id="embedLabel">0 / ${data.total}</span><div class="bar" id="embedProgress" style="width:0px"></div></div></div>`);
+        bar = document.getElementById('embedProgress');
+      }
+      const pct = data.total ? data.done / data.total : 0;
+      bar.style.width = (pct * 240).toFixed(0) + 'px';
+      document.getElementById('embedLabel').textContent = `${data.done} / ${data.total}`;
+    }
+    if (stage === 'embed' && status === 'done') {
+      addCard(`
+        <h3>4 &middot; Embed &mdash; sample vector</h3>
+        <p class="empty-hint">Dense dims: ${data.dims}. First 8 dims:</p>
+        <div class="chunk-text mono">[${data.dense_preview.map((v) => v.toFixed(4)).join(', ')}, &hellip;]</div>
+        <p class="empty-hint" style="margin-top:10px;">Sparse (lexical) top-5 tokens by weight:</p>
+        <table>
+          <tr><th>Token</th><th>Weight</th></tr>
+          ${data.sparse_preview.map((t) => `<tr><td class="mono">${escapeHtml(t.token)}</td><td>${t.weight}</td></tr>`).join('')}
+        </table>
+      `);
+    }
+    if (stage === 'index' && status === 'done') {
+      addCard(`
+        <h3>5 &middot; Index</h3>
+        <div class="stat-grid">
+          <div class="stat"><div class="v">${data.points_count}</div><div class="k">Points stored</div></div>
+        </div>
+        <p class="mono">Collection: ${escapeHtml(data.collection)}</p>
+      `);
+    }
+  };
+
+  es.onerror = () => {
+    es.close();
+    document.getElementById('startBtn').disabled = false;
+  };
+});
+</script>
+{% endblock %}

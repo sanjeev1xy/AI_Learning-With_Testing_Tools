@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="layout">
+  <div class="pane pane-sticky">
+    <h2>Pipeline</h2>
+    <div class="stage-list">
+      <div class="stage-item" data-stage="rewrite"><span class="num">1</span><div><div class="label">Rewrite</div><div class="sub">Groq alt phrasings</div></div></div>
+      <div class="stage-item" data-stage="embed"><span class="num">2</span><div><div class="label">Embed</div><div class="sub">bge-m3</div></div></div>
+      <div class="stage-item" data-stage="search"><span class="num">3</span><div><div class="label">Hybrid search</div><div class="sub">dense + sparse</div></div></div>
+      <div class="stage-item" data-stage="fuse"><span class="num">4</span><div><div class="label">RRF fuse</div><div class="sub">reciprocal rank</div></div></div>
+      <div class="stage-item" data-stage="rerank"><span class="num">5</span><div><div class="label">Re-rank</div><div class="sub">bge-reranker-v2-m3</div></div></div>
+      <div class="stage-item" data-stage="answer"><span class="num">6</span><div><div class="label">Answer</div><div class="sub">Groq, grounded</div></div></div>
+    </div>
+  </div>
+
+  <div class="pane">
+    <h2>Chat</h2>
+    <div class="chat-log" id="chatLog"></div>
+
+    <div class="suggested-chips">
+      <button class="chip" data-q="What test cases cover SQL injection?">What test cases cover SQL injection?</button>
+      <button class="chip" data-q="Show me high priority booking CRUD test cases">High priority Booking CRUD cases</button>
+      <button class="chip" data-q="Create a new test case for JIRA VWO-1234 about rate limiting">Generate: rate limiting test case</button>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea id="questionInput" placeholder="Ask about the test cases, or say 'create a new test case for...'"></textarea>
+      <button class="btn" id="askBtn">Ask</button>
+    </div>
+    <p class="error" id="chatError"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chatLog = document.getElementById('chatLog');
+const questionInput = document.getElementById('questionInput');
+
+document.querySelectorAll('.chip').forEach((chip) => {
+  chip.addEventListener('click', () => { questionInput.value = chip.dataset.q; ask(); });
+});
+document.getElementById('askBtn').addEventListener('click', ask);
+
+function resetStages() {
+  ['rewrite', 'embed', 'search', 'fuse', 'rerank', 'answer'].forEach((s) => setStageState(s, null));
+}
+
+function table(rows, cols) {
+  if (!rows.length) return '<p class="empty-hint">none</p>';
+  const head = '<tr>' + cols.map((c) => `<th>${c}</th>`).join('') + '</tr>';
+  const body = rows.map((r) => '<tr>' + cols.map((c) => `<td>${typeof r[c.toLowerCase().replace(/ /g,'_')] === 'number' ? r[c.toLowerCase().replace(/ /g,'_')] : escapeHtml(String(r[c.toLowerCase().replace(/ /g,'_')] ?? ''))}</td>`).join('') + '</tr>').join('');
+  return `<table>${head}${body}</table>`;
+}
+
+async function ask() {
+  const question = questionInput.value.trim();
+  if (!question) return;
+
+  document.getElementById('chatError').textContent = '';
+  document.getElementById('askBtn').disabled = true;
+  resetStages();
+  ['rewrite', 'embed', 'search', 'fuse', 'rerank'].forEach((s) => setStageState(s, 'active'));
+
+  chatLog.insertAdjacentHTML('beforeend', `<div class="msg-user">${escapeHtml(question)}</div>`);
+  questionInput.value = '';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Chat failed');
+
+    ['rewrite', 'embed', 'search', 'fuse', 'rerank', 'answer'].forEach((s) => setStageState(s, 'done'));
+
+    localStorage.setItem('lastUsedChunkIds', JSON.stringify(data.chunks_used.map((c) => c.id)));
+
+    const modeClass = data.mode === 'generate' ? 'generate' : 'answer';
+    chatLog.insertAdjacentHTML('beforeend', `
+      <div class="msg-assistant">
+        <span class="pill mode-pill ${modeClass}">${data.mode}</span>
+        <span class="empty-hint" style="margin-left:8px;">${data.model} &middot; ${data.total_tokens} tok</span>
+        <div class="answer-box" style="margin-top:8px;">${escapeHtml(data.answer)}</div>
+
+        <details style="margin-top:10px;">
+          <summary class="details-toggle">Query rewrites (${data.rewrites.length})</summary>
+          <ul>${data.rewrites.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+        </details>
+
+        <details style="margin-top:6px;">
+          <summary class="details-toggle">Dense top-N vs Sparse top-N vs RRF-fused</summary>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:8px;">
+            <div><h4 style="font-size:12px;">Dense</h4>${table(data.dense_top, ['Id','Score','Text'])}</div>
+            <div><h4 style="font-size:12px;">Sparse</h4>${table(data.sparse_top, ['Id','Score','Text'])}</div>
+            <div><h4 style="font-size:12px;">RRF fused</h4>${table(data.rrf_top, ['Id','Rrf score','Text'])}</div>
+          </div>
+        </details>
+
+        <details style="margin-top:6px;">
+          <summary class="details-toggle">Re-rank before / after</summary>
+          ${table(data.rerank_table, ['Id','Rrf score','Rerank score','Text'])}
+        </details>
+
+        <details style="margin-top:6px;">
+          <summary class="details-toggle">Chunks used (${data.chunks_used.length}) &middot; <a href="/chunks">view in chunk browser</a></summary>
+          ${data.chunks_used.map((c, i) => `<div class="chunk-text" style="margin-bottom:6px;"><strong>[Chunk ${i}] #${c.id}</strong><br/>${escapeHtml(c.text)}</div>`).join('')}
+        </details>
+      </div>
+    `);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  } catch (err) {
+    resetStages();
+    document.getElementById('chatError').textContent = err.message;
+  } finally {
+    document.getElementById('askBtn').disabled = false;
+  }
+}
+</script>
+{% endblock %}

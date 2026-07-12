@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Advanced RAG Explorer{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="navbar">
+    <div class="brand"><span class="mark"></span> Advanced RAG Explorer</div>
+    <nav>
+      <a href="/upload" class="{{ 'active' if active == 'upload' else '' }}">Upload</a>
+      <a href="/ingest" class="{{ 'active' if active == 'ingest' else '' }}">Ingest</a>
+      <a href="/chunks" class="{{ 'active' if active == 'chunks' else '' }}">Chunks</a>
+      <a href="/chat" class="{{ 'active' if active == 'chat' else '' }}">Chat</a>
+    </nav>
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

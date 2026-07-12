@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="layout" style="grid-template-columns: 1fr;">
+  <div class="pane">
+    <h2>Upload a dataset</h2>
+    <p class="empty-hint">Accepts <code>.csv</code>, <code>.xlsx</code>, <code>.xls</code>. Defaults to the bundled
+      <code>testcase/test_cases.csv</code> (5,000 rows) if you skip this step.</p>
+
+    <div class="upload-drop" id="dropZone">
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" />
+      <div>Click to choose a file, or drag it here</div>
+    </div>
+    <p id="uploadError" class="error"></p>
+
+    <div id="previewSection" style="display:none; margin-top: 20px;">
+      <div class="stat-grid" id="statGrid"></div>
+
+      <h3>Text columns (concatenated &amp; embedded)</h3>
+      <div class="checkbox-row" id="textColsRow"></div>
+
+      <h3>Metadata columns (kept as Qdrant payload for filtering)</h3>
+      <div class="checkbox-row" id="metaColsRow"></div>
+
+      <h3>First 5 rows</h3>
+      <div style="overflow-x:auto;">
+        <table id="previewTable"></table>
+      </div>
+
+      <a class="btn" id="goIngest" href="/ingest" style="display:inline-block; margin-top:16px;">Continue to Ingest &rarr;</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let lastFilename = null;
+
+document.getElementById('dropZone').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  if (e.target.files[0]) uploadFile(e.target.files[0]);
+});
+document.getElementById('dropZone').addEventListener('dragover', (e) => e.preventDefault());
+document.getElementById('dropZone').addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+});
+
+async function uploadFile(file) {
+  document.getElementById('uploadError').textContent = '';
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Upload failed');
+    lastFilename = data.filename;
+    renderPreview(data);
+  } catch (err) {
+    document.getElementById('uploadError').textContent = err.message;
+  }
+}
+
+function renderPreview(data) {
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat"><div class="v">${data.row_count}</div><div class="k">Rows</div></div>
+    <div class="stat"><div class="v">${data.columns.length}</div><div class="k">Columns</div></div>
+    <div class="stat"><div class="v">${escapeHtml(data.filename)}</div><div class="k">File</div></div>
+  `;
+
+  const textDefaults = ['title', 'steps', 'expected', 'tags'];
+  const metaDefaults = ['id', 'jira_id', 'priority', 'module'];
+
+  document.getElementById('textColsRow').innerHTML = data.columns.map((c) => `
+    <label><input type="checkbox" class="text-col" value="${escapeHtml(c)}" ${textDefaults.includes(c) ? 'checked' : ''}/> ${escapeHtml(c)}</label>
+  `).join('');
+  document.getElementById('metaColsRow').innerHTML = data.columns.map((c) => `
+    <label><input type="checkbox" class="meta-col" value="${escapeHtml(c)}" ${metaDefaults.includes(c) ? 'checked' : ''}/> ${escapeHtml(c)}</label>
+  `).join('');
+
+  const headRow = '<tr>' + data.columns.map((c) => `<th>${escapeHtml(c)}</th>`).join('') + '</tr>';
+  const bodyRows = data.sample_rows.map((row) =>
+    '<tr>' + data.columns.map((c) => `<td>${escapeHtml(String(row[c]).slice(0, 60))}</td>`).join('') + '</tr>'
+  ).join('');
+  document.getElementById('previewTable').innerHTML = headRow + bodyRows;
+
+  updateIngestLink();
+  document.querySelectorAll('.text-col, .meta-col').forEach((el) => el.addEventListener('change', updateIngestLink));
+}
+
+function updateIngestLink() {
+  const textCols = [...document.querySelectorAll('.text-col:checked')].map((e) => e.value).join(',');
+  const metaCols = [...document.querySelectorAll('.meta-col:checked')].map((e) => e.value).join(',');
+  const params = new URLSearchParams({ filename: lastFilename || '', text_cols: textCols, meta_cols: metaCols });
+  document.getElementById('goIngest').href = '/ingest?' + params.toString();
+}
+</script>
+{% endblock %}
