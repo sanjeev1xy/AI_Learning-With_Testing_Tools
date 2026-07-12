@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How I Built an Advanced RAG Pipeline — The Testing Academy</title>
+<style>
+  :root {
+    --cream: #faf9f5;
+    --cream-dim: #f0ece1;
+    --card: #ffffff;
+    --border: #e5e1d8;
+    --text: #3d3929;
+    --text-dim: #8a8474;
+    --coral: #da7756;
+    --coral-dim: #f3ded4;
+    --coral-deep: #b85c3e;
+    --green: #4b8a63;
+    --blue: #4a6fa5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 60px 24px 120px; }
+  header.hero { text-align: center; margin-bottom: 70px; }
+  header.hero .kicker {
+    display: inline-block;
+    background: var(--coral-dim);
+    color: var(--coral-deep);
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  header.hero h1 {
+    font-size: 42px;
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+  }
+  header.hero p {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  section { margin-bottom: 64px; opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  section.in-view { opacity: 1; transform: translateY(0); }
+  h2 { font-size: 26px; margin: 0 0 10px; }
+  h2 .n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    font-size: 15px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .lede { color: var(--text-dim); font-size: 15px; margin-bottom: 24px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 16px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+  code, .mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: var(--cream-dim); padding: 2px 6px; border-radius: 5px; }
+
+  /* pipeline diagram */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 20px 4px 30px;
+  }
+  .pnode {
+    flex: 0 0 auto;
+    min-width: 140px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    position: relative;
+  }
+  .pnode .icon { font-size: 22px; margin-bottom: 6px; }
+  .pnode .t { font-weight: 700; font-size: 13.5px; }
+  .pnode .s { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .parrow {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--coral), var(--coral));
+    position: relative;
+    margin: 0 2px;
+  }
+  .parrow::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: -4px;
+    border-left: 7px solid var(--coral);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+  .parrow .dot {
+    position: absolute;
+    top: -3px; left: 0;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--coral-deep);
+    animation: travel 2.2s linear infinite;
+  }
+  @keyframes travel {
+    0% { left: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { left: 26px; opacity: 0; }
+  }
+
+  .fuse-demo { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+  .fuse-col { text-align: center; }
+  .fuse-col h4 { font-size: 12px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .fuse-item {
+    background: var(--cream-dim);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    width: 130px;
+  }
+  .fuse-plus { font-size: 20px; color: var(--text-dim); }
+  .fuse-arrow { font-size: 22px; color: var(--coral); }
+  .fuse-result .fuse-item { border-color: var(--coral); background: var(--coral-dim); font-weight: 700; }
+
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
+  .badge {
+    background: var(--cream-dim);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0; }
+  .stat-box {
+    flex: 1;
+    min-width: 130px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-box .v { font-size: 24px; font-weight: 800; color: var(--coral-deep); }
+  .stat-box .k { font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
+
+  footer { text-align: center; color: var(--text-dim); font-size: 13px; padding-top: 30px; border-top: 1px solid var(--border); }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 50px; }
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 12.5px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+  .toc a:hover { border-color: var(--coral); color: var(--coral-deep); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="kicker">The Testing Academy &middot; Vibe-Coded RAG</span>
+    <h1>How I Built an Advanced RAG Pipeline</h1>
+    <p>A hybrid-retrieval, re-ranked, grounded-generation system over 5,000 JIRA-format QA test
+      cases — dense + sparse embeddings, Qdrant, cross-encoder re-ranking, and query rewriting,
+      wired together end to end.</p>
+  </header>
+
+  <nav class="toc">
+    <a href="#why">Why "advanced"?</a>
+    <a href="#ingest">Ingest pipeline</a>
+    <a href="#hybrid">Hybrid retrieval</a>
+    <a href="#rrf">RRF fusion</a>
+    <a href="#rerank">Re-ranking</a>
+    <a href="#rewrite">Query rewriting</a>
+    <a href="#generate">Generation</a>
+    <a href="#stack">Stack &amp; tunables</a>
+  </nav>
+
+  <section id="why">
+    <h2><span class="n">1</span>Why "advanced" over a basic RAG?</h2>
+    <p class="lede">A basic RAG does one embedding model, one vector search, one LLM call. That's fine for a
+      handful of documents. At 5,000 rows with overlapping vocabulary (lots of test cases share words like
+      "verify", "booking", "user"), pure semantic (dense) search alone starts missing exact-keyword matches —
+      and pure keyword search misses paraphrases. This pipeline layers in the techniques that address that,
+      one deliberate stage at a time.</p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="v">5,000</div><div class="k">Test cases</div></div>
+      <div class="stat-box"><div class="v">2</div><div class="k">Vector types / chunk</div></div>
+      <div class="stat-box"><div class="v">3</div><div class="k">Query phrasings searched</div></div>
+      <div class="stat-box"><div class="v">1</div><div class="k">Re-ranking pass</div></div>
+    </div>
+  </section>
+
+  <section id="ingest">
+    <h2><span class="n">2</span>Stage 1 — Ingest</h2>
+    <p class="lede">CSV/XLSX rows become searchable vectors in five steps:</p>
+    <div class="pipeline">
+      <div class="pnode"><div class="icon">&#128196;</div><div class="t">Read</div><div class="s">CSV / XLSX &rarr; rows</div></div>
+      <div class="parrow"><span class="dot"></span></div>
+      <div class="pnode"><div class="icon">&#128221;</div><div class="t">Build docs</div><div class="s">row &rarr; document</div></div>
+      <div class="parrow"><span class="dot" style="animation-delay:0.3s"></span></div>
+      <div class="pnode"><div class="icon">&#9986;&#65039;</div><div class="t">Chunk</div><div class="s">1000 chars, 150 overlap</div></div>
+      <div class="parrow"><span class="dot" style="animation-delay:0.6s"></span></div>
+      <div class="pnode"><div class="icon">&#129504;</div><div class="t">Embed</div><div class="s">bge-m3, dense + sparse</div></div>
+      <div class="parrow"><span class="dot" style="animation-delay:0.9s"></span></div>
+      <div class="pnode"><div class="icon">&#128193;</div><div class="t">Index</div><div class="s">Qdrant collection</div></div>
+    </div>
+    <div class="card">
+      Most test-case rows are short enough that <strong>1 row = 1 chunk</strong>. Longer rows (verbose steps)
+      get split at 1,000 characters with a 150-character overlap, so a sentence that straddles a chunk
+      boundary is never fully lost to one side.
+    </div>
+  </section>
+
+  <section id="hybrid">
+    <h2><span class="n">3</span>Hybrid retrieval — one model, two signals</h2>
+    <p class="lede"><code>bge-m3</code> produces both a <strong>dense</strong> vector (1024-dim, semantic
+      meaning) and a <strong>sparse</strong> vector (lexical weights per token, like a smarter TF-IDF) from a
+      single forward pass. Both get stored as named vectors on the same Qdrant point.</p>
+    <div class="grid2">
+      <div class="card">
+        <strong>Dense search</strong> catches paraphrases — "sign in fails after 5 tries" retrieves a chunk
+        about "account lockout on repeated failed logins" even with no shared words.
+      </div>
+      <div class="card">
+        <strong>Sparse search</strong> catches exact terms — a query for <code>"VWO-1234"</code> or
+        <code>"XXE"</code> retrieves chunks containing that literal token, which dense embeddings alone can
+        blur into a diffuse cloud of "similar-ish" meaning.
+      </div>
+    </div>
+  </section>
+
+  <section id="rrf">
+    <h2><span class="n">4</span>Reciprocal Rank Fusion</h2>
+    <p class="lede">Dense and sparse searches return two separately-ranked lists. RRF combines them without
+      needing the raw scores to be on the same scale — it only looks at <em>rank position</em>:</p>
+    <div class="card mono" style="text-align:center; font-size:15px;">score(doc) = &Sigma; 1 / (k + rank<sub>list</sub>(doc))</div>
+    <div class="fuse-demo">
+      <div class="fuse-col">
+        <h4>Dense rank</h4>
+        <div class="fuse-item">#1 Chunk A</div>
+        <div class="fuse-item">#2 Chunk C</div>
+        <div class="fuse-item">#3 Chunk B</div>
+      </div>
+      <div class="fuse-plus">+</div>
+      <div class="fuse-col">
+        <h4>Sparse rank</h4>
+        <div class="fuse-item">#1 Chunk B</div>
+        <div class="fuse-item">#2 Chunk A</div>
+        <div class="fuse-item">#3 Chunk D</div>
+      </div>
+      <div class="fuse-arrow">&rarr;</div>
+      <div class="fuse-col fuse-result">
+        <h4>RRF fused</h4>
+        <div class="fuse-item">#1 Chunk A</div>
+        <div class="fuse-item">#2 Chunk B</div>
+        <div class="fuse-item">#3 Chunk C</div>
+      </div>
+    </div>
+    <p class="lede">Chunk A shows up near the top of <em>both</em> lists, so it wins the fused ranking even
+      though it was never literally #1 in either one — that's the point of fusing two independent signals.</p>
+  </section>
+
+  <section id="rerank">
+    <h2><span class="n">5</span>Cross-encoder re-ranking</h2>
+    <p class="lede">Dense/sparse search both score a query against a document <em>independently</em> — fast,
+      but approximate. <code>bge-reranker-v2-m3</code> is a cross-encoder: it reads the query and each
+      candidate chunk <em>together</em> in one pass and outputs a direct relevance score. Much more accurate,
+      much slower — which is exactly why it only runs on the top ~20 RRF candidates, not the full 5,000-row
+      collection.</p>
+    <div class="badge-row">
+      <span class="badge">RRF gives ~20 candidates</span>
+      <span class="badge">Reranker scores all 20 pairs</span>
+      <span class="badge">Top 4 go to the LLM</span>
+    </div>
+  </section>
+
+  <section id="rewrite">
+    <h2><span class="n">6</span>Query rewriting</h2>
+    <p class="lede">Before retrieval, the LLM generates two alternate phrasings of the user's question. All
+      three variants get embedded and searched; results are merged by best score per document. This catches
+      cases where the user's exact wording doesn't match how a test case is phrased in the corpus, without
+      requiring the user to rephrase manually.</p>
+  </section>
+
+  <section id="generate">
+    <h2><span class="n">7</span>Grounded generation — two modes</h2>
+    <div class="grid2">
+      <div class="card">
+        <strong>Answer mode</strong> — the default. The LLM answers strictly from the retrieved chunks and
+        cites them inline as <code>[Chunk N]</code>. If the corpus doesn't cover the question, it says so
+        instead of inventing an answer.
+      </div>
+      <div class="card">
+        <strong>Generate mode</strong> — auto-detected from phrases like "create a new test case for...". The
+        LLM drafts a new, structured test case (Title / Preconditions / Steps / Expected / Priority / Tags),
+        using the retrieved similar cases as style templates so the output matches the corpus's voice.
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2><span class="n">8</span>Stack &amp; tunables</h2>
+    <div class="grid2">
+      <div class="card">
+        <strong>Backend</strong>: Flask + Server-Sent Events for the live ingest progress stream.<br/>
+        <strong>Embeddings</strong>: <code>BAAI/bge-m3</code> (dense + sparse, one model).<br/>
+        <strong>Vector DB</strong>: Qdrant, embedded/local mode — no Docker required.<br/>
+        <strong>Re-ranker</strong>: <code>BAAI/bge-reranker-v2-m3</code> cross-encoder.<br/>
+        <strong>LLM</strong>: Groq (<code>openai/gpt-oss-120b</code>) for rewriting and generation.
+      </div>
+      <div class="card">
+        <strong>CHUNK_SIZE</strong> = 1000 &middot; <strong>CHUNK_OVERLAP</strong> = 150<br/>
+        <strong>TOP_N_HYBRID</strong> = 20 &middot; <strong>TOP_K_RERANK</strong> = 4<br/>
+        <strong>RRF_K</strong> = 60 &middot; <strong>REWRITE_ENABLED</strong> = true
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built end to end through vibe coding, for The Testing Academy. Every stage above is live in the app —
+    open <code>/ingest</code> and <code>/chat</code> to watch it run on the real 5,000-row corpus.
+  </footer>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('section');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+  }, { threshold: 0.12 });
+  sections.forEach((s) => io.observe(s));
+</script>
+</body>
+</html>
