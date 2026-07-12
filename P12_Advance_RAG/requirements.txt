@@ -4,5 +4,6 @@ pandas
 openpyxl
 qdrant-client
 FlagEmbedding
+transformers==4.57.6
 groq
 numpy
