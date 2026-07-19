@@ -6,3 +6,4 @@ playwright-report/
 test-results/
 *.local
 package-lock.json
+.playwright-mcp/
