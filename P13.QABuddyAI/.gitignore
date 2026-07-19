@@ -1,0 +1,6 @@
+.env
+.vercel
+node_modules/
+
+# Raw source content stays local (127MB, contains cloned repos); lib/kb.json holds the extracted chunks
+data/

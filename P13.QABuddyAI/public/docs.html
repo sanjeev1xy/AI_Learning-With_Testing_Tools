@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>QABuddy.ai — Technical Documentation</title>
+  <link rel="stylesheet" href="docs.css" />
+</head>
+<body>
+<div class="docs-app">
+
+  <aside class="docs-sidebar">
+    <div class="docs-brand"><span class="brand-emoji">&#129302;</span> QABuddy.ai</div>
+    <hr class="brand-rule" />
+
+    <div class="nav-group">overview</div>
+    <a href="#what-is">What is QABuddy?</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#tech-stack">Tech Stack</a>
+
+    <div class="nav-group">components</div>
+    <a href="#knowledge-base">Knowledge Base</a>
+    <a href="#hybrid-retrieval">Hybrid Retrieval</a>
+    <a href="#llm-prompts">LLM &amp; Prompts</a>
+    <a href="#api-endpoints">API Endpoints</a>
+
+    <div class="nav-group">deployment</div>
+    <a href="#run-locally">Run Locally</a>
+    <a href="#env-vars">Environment Vars</a>
+    <a href="#extending-kb">Extending the KB</a>
+
+    <div class="nav-group">origin</div>
+    <a href="#original-design">Original Design</a>
+    <a href="#stack-decisions">Stack Decisions</a>
+
+    <div class="nav-group">live</div>
+    <a href="/" target="_blank" rel="noopener">Vercel App &#8599;</a>
+    <a href="//docs.html" target="_blank" rel="noopener">Vercel Docs &#8599;</a>
+  </aside>
+
+  <main class="docs-main">
+    <div class="top-links">
+      <a class="back-link" href="/">&larr; Back to Chat</a>
+      <a class="live-link" href="/" target="_blank" rel="noopener">Live on Vercel &#8599;</a>
+    </div>
+
+    <h1 class="docs-title">QABuddy.ai</h1>
+    <p class="docs-subtitle">Multi-Source Hybrid RAG for QA Engineers &middot; Technical Documentation</p>
+
+    <div class="badges">
+      <span class="badge b-green">Flask 3</span>
+      <span class="badge b-blue">Qdrant Hybrid</span>
+      <span class="badge b-yellow">BGE-M3 Retrieval</span>
+      <span class="badge b-purple">Groq LLM</span>
+      <span class="badge b-teal">Python</span>
+    </div>
+
+    <section id="what-is">
+      <h2>What is QABuddy.ai?</h2>
+      <p>
+        QABuddy.ai is an AI-powered assistant for QA engineers that provides cited answers
+        grounded in your team's actual QA knowledge base &mdash; Selenium framework code, Playwright
+        tests, test cases, JIRA tickets, PRDs, Jenkins logs, meeting transcripts, and glossaries.
+      </p>
+      <p>
+        Unlike generic AI chatbots that hallucinate, QABuddy retrieves the most relevant chunks
+        from your indexed knowledge base using hybrid dense + sparse search, then passes them as
+        grounded context to the LLM. Every answer includes numbered citations pointing back to the
+        exact source.
+      </p>
+      <p class="kicker"><b>Key capabilities:</b></p>
+      <ul>
+        <li><b>Answer mode</b> &mdash; practical QA engineering answers with code examples</li>
+        <li><b>Generate mode</b> &mdash; auto-detected when you ask to create/write test cases</li>
+        <li><b>Source scoping</b> &mdash; restrict retrieval to any subset of the 9 knowledge sources</li>
+        <li><b>Full transparency</b> &mdash; per-answer view of rewrites, dense/sparse hits, RRF fusion and rerank scores</li>
+      </ul>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture Overview</h2>
+      <p>The system consists of two main pipelines:</p>
+
+      <h3 class="h-yellow">Ingestion Pipeline (build-time)</h3>
+      <ol>
+        <li><b>Parse</b> &mdash; load raw files (PDF, CSV, JSON, Java, TypeScript, Markdown, logs)</li>
+        <li><b>Clean</b> &mdash; normalize whitespace, strip ANSI codes, deduplicate</li>
+        <li><b>Chunk</b> &mdash; split per source type (code 1200 chars / docs 1000 / logs 2000, with overlap)</li>
+        <li><b>Embed</b> &mdash; generate dense (semantic) + sparse (lexical) vectors via BGE-M3</li>
+        <li><b>Index</b> &mdash; upsert to Qdrant vector DB with metadata (source_type, source_id, citation, path)</li>
+      </ol>
+      <p>
+        Ingestion is idempotent per source: re-ingesting a folder first deletes its old points
+        (deterministic UUID5 point ids), other sources stay untouched.
+      </p>
+
+      <h3 class="h-yellow">Query Pipeline (runtime)</h3>
+      <ol>
+        <li><b>Query</b> &mdash; user submits question via chat UI</li>
+        <li><b>Mode detection</b> &mdash; regex patterns classify intent (answer / generate)</li>
+        <li><b>Rewrite</b> &mdash; Groq generates alternate phrasings (3 search variants)</li>
+        <li><b>Hybrid search</b> &mdash; dense vector + sparse lexical search per variant (Qdrant)</li>
+        <li><b>RRF Fusion</b> &mdash; Reciprocal Rank Fusion combines both result lists</li>
+        <li><b>Rerank</b> &mdash; cross-encoder (bge-reranker-v2-m3) keeps top-6 chunks</li>
+        <li><b>Cited answer</b> &mdash; chunks injected as numbered context, Groq answers with [n] citations</li>
+      </ol>
+    </section>
+
+    <section id="tech-stack">
+      <h2>Technology Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+        <tr><td>Frontend</td><td>Flask + Jinja2 templates</td><td>Server-rendered chat UI</td></tr>
+        <tr><td>UI</td><td>Vanilla JS + custom CSS</td><td>Claude-themed warm light UI</td></tr>
+        <tr><td>LLM</td><td>Groq API (openai/gpt-oss-120b)</td><td>Fast inference, cited generation</td></tr>
+        <tr><td>Retrieval</td><td>BGE-M3 hybrid (dense + sparse)</td><td>Semantic + keyword recall</td></tr>
+        <tr><td>Vector DB</td><td>Qdrant (embedded or server)</td><td>Dense + sparse vector storage</td></tr>
+        <tr><td>Reranker</td><td>BAAI/bge-reranker-v2-m3</td><td>Cross-encoder precision pass</td></tr>
+        <tr><td>Embeddings</td><td>BAAI/bge-m3</td><td>1024-dim dense + lexical weights</td></tr>
+        <tr><td>Language</td><td>Python 3</td><td>Ingestion + serving</td></tr>
+      </table>
+    </section>
+
+    <section id="knowledge-base">
+      <h2>Knowledge Base Structure</h2>
+      <p>The knowledge base (<code class="inline">data/</code>) contains QA content organized by source folder:</p>
+      <table>
+        <tr><th>#</th><th>Folder</th><th>Content</th><th>Type</th></tr>
+        <tr><td>1</td><td>01_selenium_framework</td><td>Java WebDriver framework, POM patterns, wait utilities</td><td>code</td></tr>
+        <tr><td>2</td><td>02_playwright_framework</td><td>TypeScript specs, fixtures, auth, API testing</td><td>code</td></tr>
+        <tr><td>3</td><td>03_test_cases</td><td>Structured test cases with IDs, priorities, steps</td><td>test_case</td></tr>
+        <tr><td>4</td><td>04_jira_tickets</td><td>Bug reports, task descriptions, root cause analyses</td><td>jira</td></tr>
+        <tr><td>5</td><td>05_company_docs</td><td>Testing standards, RTM templates</td><td>doc</td></tr>
+        <tr><td>7</td><td>07_meeting_notes</td><td>QA standup meeting notes</td><td>transcript</td></tr>
+        <tr><td>8</td><td>08_lucid_charts</td><td>Exported flow diagrams / process docs</td><td>doc</td></tr>
+        <tr><td>9</td><td>09_requirements</td><td>PRD / SRS / BRD / FRD, acceptance criteria</td><td>doc</td></tr>
+        <tr><td>10</td><td>10_jenkins_logs</td><td>CI build logs, failure analyses, flakiness reports</td><td>log</td></tr>
+      </table>
+      <p>Each indexed chunk carries the following payload:</p>
+      <pre><code><span class="c-comment"># Qdrant point payload for every chunk:</span>
+{
+  <span class="c-key">"text"</span>:        <span class="c-str">"[header]\n&lt;chunk body&gt;"</span>,   <span class="c-comment"># what the LLM sees &amp; cites</span>
+  <span class="c-key">"source_type"</span>: <span class="c-str">"code"</span>,                    <span class="c-comment"># one of 6 types</span>
+  <span class="c-key">"source_name"</span>: <span class="c-str">"Selenium framework"</span>,
+  <span class="c-key">"source_id"</span>:   <span class="c-num">1</span>,                         <span class="c-comment"># data-folder number (sidebar filter)</span>
+  <span class="c-key">"citation"</span>:    <span class="c-str">"BasePage.java:42"</span>,       <span class="c-comment"># file:line, ticket, page or build</span>
+  ...                                       <span class="c-comment"># per-source extras (ticket_key, tc_id, build_id)</span>
+}</code></pre>
+    </section>
+
+    <section id="hybrid-retrieval">
+      <h2>Hybrid Retrieval</h2>
+      <p>
+        Retrieval runs two searches per query variant over the same Qdrant collection:
+        <b>dense</b> (1024-dim BGE-M3 vectors, cosine) for meaning, and <b>sparse</b>
+        (BGE-M3 lexical weights) for exact keywords &mdash; ids, exceptions, method names.
+      </p>
+
+      <h3 class="h-yellow">Reciprocal Rank Fusion</h3>
+      <pre><code><span class="c-comment"># RRF score for chunk d across both ranked lists:</span>
+<span class="c-fn">score</span>(d) = &Sigma; <span class="c-num">1</span> / (k + rank<sub>list</sub>(d))
+
+<span class="c-comment"># Parameters:</span>
+<span class="c-key">k</span> = <span class="c-num">60</span>   <span class="c-comment"># dampens the head of each list</span></code></pre>
+
+      <h3 class="h-yellow">Cross-encoder rerank</h3>
+      <pre><code><span class="c-comment"># Top fused candidates re-scored against the ORIGINAL question:</span>
+scores = reranker.<span class="c-fn">compute_score</span>([question, chunk_text])
+<span class="c-comment"># keeps top-6 chunks; only these reach the LLM</span></code></pre>
+      <p>
+        The rewrite step widens recall (3 phrasings hit different vocabulary), RRF merges
+        without score calibration, and the reranker restores precision before generation.
+      </p>
+    </section>
+
+    <section id="llm-prompts">
+      <h2>LLM &amp; Prompt Engineering</h2>
+      <p>The prompt system auto-detects the query mode and builds mode-specific system prompts:</p>
+      <table>
+        <tr><th>Mode</th><th>Trigger Pattern</th><th>System Behavior</th></tr>
+        <tr><td>answer</td><td>(default)</td><td>Practical answer grounded in retrieved chunks</td></tr>
+        <tr><td>generate</td><td>generate | create | write | draft</td><td>Structured test cases with all required fields</td></tr>
+      </table>
+      <p class="kicker">All modes enforce the same core rules:</p>
+      <ul>
+        <li>Answer <b>only</b> from provided context chunks &mdash; no hallucination</li>
+        <li>Cite every claim with <code class="inline">[n]</code> referencing the chunk number</li>
+        <li>If not in context, say so explicitly</li>
+      </ul>
+      <p>Mode can also be forced from the sidebar dropdown (auto-detect / answer / generate).</p>
+    </section>
+
+    <section id="api-endpoints">
+      <h2>API Endpoints</h2>
+
+      <div class="endpoint">
+        <div class="ep-head"><span class="ep-method m-post">POST</span> <span class="ep-path">/api/chat</span></div>
+        <p>Chat endpoint. Accepts a question plus optional source scoping and mode override. Returns the full pipeline result as JSON.</p>
+        <pre><code><span class="c-comment">// Request body</span>
+{
+  <span class="c-key">"question"</span>: <span class="c-str">"Why is the checkout coupon test flaky?"</span>,
+  <span class="c-key">"source_ids"</span>: [<span class="c-num">1</span>, <span class="c-num">4</span>, <span class="c-num">10</span>],   <span class="c-comment">// optional — sidebar checkboxes</span>
+  <span class="c-key">"mode"</span>: <span class="c-str">"answer"</span>              <span class="c-comment">// optional — omit for auto-detect</span>
+}
+
+<span class="c-comment">// Response (abridged)</span>
+{
+  <span class="c-key">"answer"</span>: <span class="c-str">"... [1] ... [2]"</span>,
+  <span class="c-key">"mode"</span>: <span class="c-str">"answer"</span>,
+  <span class="c-key">"rewrites"</span>: [...],
+  <span class="c-key">"citations"</span>: [{ <span class="c-key">"n"</span>: <span class="c-num">1</span>, <span class="c-key">"badge"</span>: <span class="c-str">"Jenkins"</span>, <span class="c-key">"citation"</span>: <span class="c-str">"BUILD-4521 console.log"</span>, ... }],
+  <span class="c-key">"total_tokens"</span>: <span class="c-num">1843</span>,
+  <span class="c-key">"debug"</span>: { <span class="c-key">"dense_top"</span>: [...], <span class="c-key">"sparse_top"</span>: [...], <span class="c-key">"rrf_top"</span>: [...], <span class="c-key">"rerank_top"</span>: [...] }
+}</code></pre>
+      </div>
+
+      <div class="endpoint">
+        <div class="ep-head"><span class="ep-method m-get">GET</span> <span class="ep-path">/api/status</span></div>
+        <p>Health / index status. Returns total chunks and per-source counts for the sidebar.</p>
+        <pre><code>{ <span class="c-key">"exists"</span>: <span class="c-num">true</span>, <span class="c-key">"points_count"</span>: <span class="c-num">189</span>,
+  <span class="c-key">"sources"</span>: [{ <span class="c-key">"id"</span>: <span class="c-num">1</span>, <span class="c-key">"name"</span>: <span class="c-str">"Selenium framework"</span>, <span class="c-key">"count"</span>: <span class="c-num">59</span> }, ...],
+  <span class="c-key">"by_source"</span>: { <span class="c-key">"code"</span>: <span class="c-num">139</span>, <span class="c-key">"test_case"</span>: <span class="c-num">40</span>, ... } }</code></pre>
+      </div>
+    </section>
+
+    <section id="run-locally">
+      <h2>Run Locally</h2>
+      <pre><code><span class="c-comment"># 1. Create a virtualenv and install dependencies</span>
+python -m venv .venv
+.venv\Scripts\activate          <span class="c-comment"># Windows</span>
+pip install -r requirements.txt
+
+<span class="c-comment"># 2. Set environment variables</span>
+copy .env.example .env          <span class="c-comment"># then put your GROQ_API_KEY inside</span>
+
+<span class="c-comment"># 3. Ingest the knowledge base (first run downloads BGE-M3, ~2GB)</span>
+python ingest.py --source all
+
+<span class="c-comment"># 4. Start the app</span>
+python app.py                   <span class="c-comment"># serves on http://127.0.0.1:5080</span></code></pre>
+    </section>
+
+    <section id="env-vars">
+      <h2>Environment Variables</h2>
+      <table>
+        <tr><th>Variable</th><th>Required</th><th>Description</th></tr>
+        <tr><td>GROQ_API_KEY</td><td>Yes</td><td>Get from console.groq.com &mdash; free tier available</td></tr>
+        <tr><td>GROQ_MODEL</td><td>No</td><td>Default: openai/gpt-oss-120b</td></tr>
+        <tr><td>PORT</td><td>No</td><td>Web server port (current: 5080)</td></tr>
+        <tr><td>QDRANT_URL</td><td>No</td><td>Qdrant server URL; omit for embedded file-backed mode</td></tr>
+        <tr><td>TOP_N_HYBRID</td><td>No</td><td>Candidates per search list (default 20)</td></tr>
+        <tr><td>TOP_K_RERANK</td><td>No</td><td>Chunks passed to the LLM (default 6)</td></tr>
+        <tr><td>RRF_K</td><td>No</td><td>RRF dampening constant (default 60)</td></tr>
+        <tr><td>REWRITE_ENABLED</td><td>No</td><td>Set false to skip query rewriting</td></tr>
+      </table>
+    </section>
+
+    <section id="extending-kb">
+      <h2>Extending the Knowledge Base</h2>
+      <p>Drop new files into the matching <code class="inline">data/</code> folder, then re-ingest just that source:</p>
+      <pre><code><span class="c-comment"># e.g. new JIRA exports into data/04_jira_tickets/</span>
+python ingest.py --source 4
+
+<span class="c-comment"># chunk + report without touching the index</span>
+python ingest.py --source 4 --dry-run</code></pre>
+      <p>
+        Re-ingestion replaces only that folder's points (delete-by-<code class="inline">source_id</code>,
+        deterministic ids), so the rest of the index is untouched. No re-embedding of other sources required.
+      </p>
+    </section>
+
+    <section id="original-design">
+      <h2>Original Design (AITesterBlueprint3x)</h2>
+      <p>
+        QABuddy.ai is adapted from <code class="inline">chapter_08_QABuddyAI</code> in the
+        <a href="https://github.com/PramodDutta/AITesterBlueprint3x" target="_blank" rel="noopener">PramodDutta/AITesterBlueprint3x</a>
+        repository by Pramod Dutta.
+      </p>
+      <p class="kicker">This local version implements the full original stack:</p>
+      <ul>
+        <li><b>BGE-M3 embeddings</b> &mdash; BAAI/bge-m3 model for dense + sparse vectors</li>
+        <li><b>Qdrant</b> &mdash; vector database, embedded file-backed or server mode</li>
+        <li><b>Flask backend</b> &mdash; Python web server</li>
+        <li><b>Groq API</b> &mdash; openai/gpt-oss-120b model for generation</li>
+        <li><b>Hybrid retrieval</b> &mdash; RRF fusion of dense + sparse Qdrant search results</li>
+        <li><b>Cross-encoder rerank</b> &mdash; BAAI/bge-reranker-v2-m3</li>
+      </ul>
+    </section>
+
+    <section id="stack-decisions">
+      <h2>Stack Decisions</h2>
+      <p>Where this build differs from the lightweight Vercel/serverless adaptation:</p>
+      <table>
+        <tr><th>Concern</th><th>This build (local)</th><th>Serverless variant</th></tr>
+        <tr><td>Retrieval</td><td>BGE-M3 dense + sparse hybrid</td><td>BM25 (pure TypeScript)</td></tr>
+        <tr><td>Vector DB</td><td>Qdrant (persistent)</td><td>In-memory index</td></tr>
+        <tr><td>Backend</td><td>Flask (Python)</td><td>Next.js API routes</td></tr>
+        <tr><td>Ingestion</td><td>Dynamic, per-source CLI</td><td>Pre-compiled static module</td></tr>
+        <tr><td>Reranker</td><td>Cross-encoder model</td><td>None (BM25 order)</td></tr>
+        <tr><td>Scale</td><td>Thousands of chunks+</td><td>A few hundred chunks</td></tr>
+      </table>
+      <p>
+        The core RAG architecture concept (hybrid retrieval &rarr; rerank &rarr; LLM with citations)
+        is preserved. Production use cases with more than a few hundred chunks should use this
+        full stack with Qdrant + BGE-M3 embeddings.
+      </p>
+    </section>
+
+    <footer class="docs-footer">
+      QABuddy.ai &middot; Built with Flask, Qdrant, BGE-M3, Groq &middot; Adapted from AITesterBlueprint3x Chapter 8
+    </footer>
+  </main>
+</div>
+</body>
+</html>

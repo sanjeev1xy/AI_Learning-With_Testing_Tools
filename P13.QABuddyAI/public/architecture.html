@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>QABuddy.ai — System Architecture</title>
+  <style>
+    :root {
+      color-scheme: dark only;
+      --bg: #0a0e14;
+      --panel: #0d1420;
+      --border: #1c2836;
+      --text: #b8c4d0;
+      --dim: #5c6b7a;
+      --green: #3ddc84;
+      --cyan: #4cc2ff;
+      --yellow: #e8c547;
+      --purple: #b48ff5;
+      --orange: #ff9f5a;
+      --pink: #ff6b9d;
+      --red: #ff6b6b;
+      --teal: #2dd4bf;
+      --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      padding: 34px 20px 50px;
+    }
+    .page-title {
+      text-align: center;
+      color: var(--green);
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      letter-spacing: 0.04em;
+    }
+    .page-sub {
+      text-align: center;
+      color: var(--dim);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      margin: 0 0 26px;
+    }
+
+    .board {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 26px 22px;
+      overflow-x: auto;
+    }
+    .board-inner { min-width: 980px; }
+
+    .col-head {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 2.1fr 1.4fr 1.3fr 1.5fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    /* generic node box */
+    .node {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      padding: 7px 10px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .node small {
+      display: block;
+      font-weight: 400;
+      font-size: 9.5px;
+      color: var(--dim);
+      margin-top: 2px;
+      letter-spacing: 0.03em;
+    }
+
+    /* data sources: 2-col grid, mixed border colors */
+    .sources-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .b-orange { border-color: var(--orange); color: var(--orange); }
+    .b-green  { border-color: var(--green);  color: var(--green); }
+    .b-blue   { border-color: var(--cyan);   color: var(--cyan); }
+    .b-purple { border-color: var(--purple); color: var(--purple); }
+    .b-pink   { border-color: var(--pink);   color: var(--pink); }
+    .b-red    { border-color: var(--red);    color: var(--red); }
+    .b-yellow { border-color: var(--yellow); color: var(--yellow); }
+    .b-teal   { border-color: var(--teal);   color: var(--teal); }
+
+    /* vertical pipelines with arrows */
+    .pipe { display: flex; flex-direction: column; align-items: stretch; }
+    .pipe .node + .node { margin-top: 26px; position: relative; }
+    .pipe .node + .node::before {
+      content: '\2193';
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--dim);
+      font-size: 13px;
+      font-weight: 400;
+    }
+    .pipe-cyan .node { border-color: var(--cyan); color: var(--cyan); }
+    .pipe-cyan .node + .node::before { color: var(--cyan); }
+    .pipe-green .node { border-color: var(--green); color: var(--green); }
+    .pipe-green .node + .node::before { color: var(--green); }
+
+    /* storage column: spaced boxes, no arrows */
+    .storage { display: flex; flex-direction: column; gap: 22px; }
+
+    /* special node accents */
+    .node.n-yellow { border-color: var(--yellow); color: var(--yellow); }
+    .node.n-purple { border-color: var(--purple); color: var(--purple); }
+    .node .hl-y { color: var(--yellow); font-weight: 700; }
+    .node .hl-o { color: var(--orange); }
+
+    /* UI layer band */
+    .ui-band {
+      margin-top: 34px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px 14px;
+      position: relative;
+    }
+    .ui-band .band-label {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel);
+      padding: 0 12px;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    .ui-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    .ui-grid .node { border-color: var(--cyan); color: var(--cyan); }
+
+    .board-footer {
+      margin-top: 26px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--dim);
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 22px;
+      margin-top: 16px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .legend span::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 7px;
+      vertical-align: -1px;
+    }
+    .lg-cyan::before   { background: var(--cyan); }
+    .lg-green::before  { background: var(--green); }
+    .lg-yellow::before { background: var(--yellow); }
+    .lg-purple::before { background: var(--purple); }
+    .lg-dim::before    { background: var(--dim); }
+
+    .back-row { text-align: center; margin-top: 30px; }
+    .back-row a {
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .back-row a:hover { text-decoration: underline; }
+    .back-row .sep { color: var(--dim); margin: 0 14px; }
+    .back-row .live { color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <h1 class="page-title">QABuddy.ai &mdash; System Architecture</h1>
+  <p class="page-sub">Multi-Source Hybrid RAG for QA Engineers &middot; Flask + Qdrant + BGE-M3 + Groq</p>
+
+  <div class="board">
+    <div class="board-inner">
+      <div class="columns">
+
+        <div>
+          <div class="col-head">Data Sources</div>
+          <div class="sources-grid">
+            <div class="node b-orange">&#9749; Selenium<small>Java framework</small></div>
+            <div class="node b-green">&#127917; Playwright<small>TypeScript tests</small></div>
+            <div class="node b-blue">&#128203; Test Cases<small>CSV / 5000 TCs</small></div>
+            <div class="node b-purple">&#128721; JIRA<small>Bugs / Tickets</small></div>
+            <div class="node b-blue">&#128196; Docs<small>Standards / RTM</small></div>
+            <div class="node b-pink">&#128209; PRD / SRS<small>Requirements</small></div>
+            <div class="node b-yellow">&#127908; Transcripts<small>Meetings / Calls</small></div>
+            <div class="node b-red">&#9881; Jenkins<small>CI/CD Logs</small></div>
+            <div class="node b-teal">&#128200; Lucid<small>Flow charts</small></div>
+            <div class="node b-green">&#128218; Glossary<small>QA Terminology</small></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="col-head">Ingestion Pipeline</div>
+          <div class="pipe pipe-cyan">
+            <div class="node">1. Parse<small>PDF/CSV/JSON/Code</small></div>
+            <div class="node">2. Clean<small>Normalize / Dedup</small></div>
+            <div class="node">3. Chunk<small>per-source size, overlap</small></div>
+            <div class="node">4. Embed<small>BGE-M3 (dense+sparse)</small></div>
+            <div class="node">5. Index<small>Qdrant upsert (uuid5)</small></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="col-head">Storage</div>
+          <div class="storage">
+            <div class="node b-green">Qdrant<small>Vector DB<br /><span class="hl-y">dense 1024-d</span><br /><span class="hl-o">sparse lexical</span></small></div>
+            <div class="node n-yellow">Payload Index<small>source_type / source_id<br />keyword + integer</small></div>
+            <div class="node b-purple">qdrant_data/<small>embedded file-backed<br />189 chunks / 9 sources</small></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="col-head">Query Pipeline</div>
+          <div class="pipe pipe-green">
+            <div class="node">User Query<small>question + source filter</small></div>
+            <div class="node">Mode Detection<small><span class="hl-o">answer / generate</span></small></div>
+            <div class="node">Rewrite<small>Groq &middot; 3 variants</small></div>
+            <div class="node">Hybrid Search<small>dense + sparse vectors</small></div>
+            <div class="node">RRF Fusion<small>Reciprocal Rank Fusion</small></div>
+            <div class="node">Rerank / Filter<small>cross-encoder &middot; top-6</small></div>
+            <div class="node n-purple">Groq LLM<small>openai/gpt-oss-120b<br />grounded generation</small></div>
+            <div class="node">Cited Answer<small>with [n] citations</small></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ui-band">
+        <span class="band-label">UI Layer &mdash; Flask + Jinja2</span>
+        <div class="ui-grid">
+          <div class="node">Chat Interface<small>claude-style UI</small></div>
+          <div class="node">Source Filter<small>9 sources toggle</small></div>
+          <div class="node">Citation Cards<small>[n] references</small></div>
+          <div class="node">Retrieval Debug<small>dense/sparse/RRF</small></div>
+          <div class="node">API Routes<small>/api/chat /api/status</small></div>
+          <div class="node">Docs Pages<small>/docs &middot; /architecture</small></div>
+        </div>
+      </div>
+
+      <div class="board-footer">
+        QABuddy.ai &middot; Adapted from PramodDutta/AITesterBlueprint3x chapter_08_QABuddyAI &middot; Local full-stack deployment
+      </div>
+
+      <div class="legend">
+        <span class="lg-cyan">Ingestion pipeline</span>
+        <span class="lg-green">Query pipeline</span>
+        <span class="lg-yellow">Hybrid retrieval</span>
+        <span class="lg-purple">LLM generation (Groq)</span>
+        <span class="lg-dim">Data flow</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="back-row">
+    <a href="/">&larr; Back to QABuddy Chat</a>
+    <span class="sep">&middot;</span>
+    <a href="docs.html">Docs</a>
+    <span class="sep">&middot;</span>
+    <a class="live" href="architecture.html" target="_blank" rel="noopener">Live on Vercel &#8599;</a>
+  </div>
+
+</body>
+</html>

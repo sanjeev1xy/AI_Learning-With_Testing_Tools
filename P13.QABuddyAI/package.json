@@ -1,0 +1,9 @@
+{
+  "name": "qabuddyai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QA Buddy — multi-source RAG for QA engineers (serverless BM25 + Groq variant)",
+  "engines": {
+    "node": ">=18"
+  }
+}

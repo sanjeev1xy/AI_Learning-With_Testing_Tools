@@ -1,0 +1,176 @@
+[
+ {
+  "id": "selenium-000",
+  "source_type": "selenium",
+  "label": "CommonToAllPage.java:1",
+  "text": "package com.thetestingacademy.base;\n\nimport com.thetestingacademy.utils.PropertiesReader;\nimport org.openqa.selenium.By;\nimport org.openqa.selenium.WebElement;\n\nimport static com.thetestingacademy.driver.DriverManager.getDriver;\n\npublic class CommonToAllPage {\n // Common to All page\n\n public void openVWOUrl() {\n getDriver().get(PropertiesReader.readKey(\"url\"));\n }\n\n public void openOrangeHRMUrl(){\n getDriver().get(PropertiesReader.readKey(\"ohr_url\"));\n }\n\n public void openKatalonUrl(){\n getDriver().get(PropertiesReader.readKey(\"katalon_url\"));\n }\n\n public void clickElement(By by){\n getDriver().findElement(by).click();\n }\n\n public void clickElement(WebElement by) {\n by.click();\n }\n public void enterInput(By by, String key) {\n getDriver().findElement(by).sendKeys(key);\n }\n\n public void enterInput(WebElement by, String key) {\n by.sendKeys(key);\n }\n\n public String getText(By by){\n return getDriver().findElement(by).getText();\n }\n\n public String getText(WebElement by){\n return by.getText();\n }\n\n}"
+ },
+ {
+  "id": "selenium-001",
+  "source_type": "selenium",
+  "label": "DriverManager.java:1",
+  "text": "package com.thetestingacademy.driver;\n\nimport com.thetestingacademy.utils.PropertiesReader;\nimport org.openqa.selenium.WebDriver;\nimport org.openqa.selenium.chrome.ChromeDriver;\nimport org.openqa.selenium.chrome.ChromeOptions;\nimport org.openqa.selenium.edge.EdgeDriver;\nimport org.openqa.selenium.edge.EdgeOptions;\nimport org.openqa.selenium.firefox.FirefoxDriver;\nimport org.openqa.selenium.firefox.FirefoxOptions;\n\npublic class DriverManager {\n\n public static WebDriver driver;\n\n public static WebDriver getDriver() {\n return driver;\n }\n\n public static void setDriver(WebDriver driver) {\n DriverManager.driver = driver;\n }\n\n // When we want to start the browser\n public static void init() {\n String browser = PropertiesReader.readKey(\"browser\");\n browser = browser.toLowerCase();\n\n switch (browser) {\n case \"edge\":\n EdgeOptions edgeOptions = new EdgeOptions();\n edgeOptions.addArguments(\"--start-maximized\");\n edgeOptions.addArguments(\"--guest\");\n driver = new EdgeDriver(edgeOptions);\n break;\n case \"chrome\":\n ChromeOptions chromeOptions = new ChromeOptions();\n chromeOptions.addArguments(\"--start-maximized\");\n driver = new ChromeDriver(chromeOptions);\n break;\n case \"firefox\":\n FirefoxOptions firefoxOptions = new FirefoxOptions();\n firefox"
+ },
+ {
+  "id": "selenium-002",
+  "source_type": "selenium",
+  "label": "LoginPage_PF.java:1",
+  "text": "package com.thetestingacademy.pages.pageFactory;\n\nimport com.thetestingacademy.base.CommonToAllPage;\nimport com.thetestingacademy.utils.PropertiesReader;\nimport com.thetestingacademy.utils.WaitHelpers;\nimport org.openqa.selenium.WebDriver;\nimport org.openqa.selenium.WebElement;\nimport org.openqa.selenium.support.FindBy;\nimport org.openqa.selenium.support.PageFactory;\n\npublic class LoginPage_PF extends CommonToAllPage {\n\n WebDriver driver;\n\n public LoginPage_PF(WebDriver driver) {\n this.driver = driver;\n PageFactory.initElements(driver, this);\n\n }\n\n // private By username = By.id(\"login-username\");\n\n @FindBy(id = \"login-username\")\n private WebElement username;\n\n @FindBy(name = \"password\")\n private WebElement password;\n\n @FindBy(id = \"js-login-btn\")\n private WebElement signButton;\n\n @FindBy(css = \"#js-notification-box-msg\")\n private WebElement error_message;\n\n // Page Actions\n public String loginToVWOInvalidCreds() {\n\n try {\n openVWOUrl();\n enterInput(username, PropertiesReader.readKey(\"invalid_username\"));\n enterInput(password, PropertiesReader.readKey(\"invalid_password\"));\n clickElement(signButton);\n WaitHelpers.waitJVM(5000);\n } catch (Exception e) {\n System.out.println(\"Elements Not found!\");\n }\n return getText(error_message);\n\n }\n}"
+ },
+ {
+  "id": "selenium-003",
+  "source_type": "selenium",
+  "label": "DashBoardPage.java:1",
+  "text": "package com.thetestingacademy.pages.pageObjectModel.vwo.improved_POM;\n\nimport com.thetestingacademy.base.CommonToAllPage;\nimport org.openqa.selenium.By;\nimport org.openqa.selenium.WebDriver;\nimport com.thetestingacademy.utils.WaitHelpers;\n\npublic class DashBoardPage extends CommonToAllPage {\n WebDriver driver;\n\n public DashBoardPage(WebDriver driver) {\n this.driver = driver;\n }\n\n private By userNameOnDashboard = By.xpath(\"//h6\");\n\n // Page Actions\n public String loggedInUserName() {\n WaitHelpers.visibilityOfElement(userNameOnDashboard);\n return getText(userNameOnDashboard);\n }\n\n}"
+ },
+ {
+  "id": "selenium-004",
+  "source_type": "selenium",
+  "label": "LoginPage.java:1",
+  "text": "package com.thetestingacademy.pages.pageObjectModel.vwo.improved_POM;\n\nimport com.thetestingacademy.base.CommonToAllPage;\nimport com.thetestingacademy.utils.WaitHelpers;\nimport org.openqa.selenium.By;\nimport org.openqa.selenium.WebDriver;\n\nimport static com.thetestingacademy.driver.DriverManager.getDriver;\n\npublic class LoginPage extends CommonToAllPage {\n\n // WebDriver\n // Page Class\n // Page Locators\n // Page Actions\n\n WebDriver driver;\n\n public LoginPage(WebDriver driver) {\n this.driver = driver;\n }\n\n // // Step 1 - Page Locators\n private By username = By.id(\"login-username\");\n private By password = By.id(\"login-password\");\n private By signButton = By.id(\"js-login-btn\");\n private By error_message = By.id(\"js-notification-box-msg\");\n\n public String loginToVWOLoginInvalidCreds(String user, String pwd) {\n openVWOUrl();\n enterInput(username,user);\n enterInput(password,pwd);\n clickElement(signButton);\n WaitHelpers.checkVisibility(getDriver(),error_message);\n return getText(error_message);\n }\n\n public void loginToVWOLoginValidCreds(String user, String pwd) {\n\n openVWOUrl();\n enterInput(username,user);\n enterInput(password,pwd);\n clickElement(signButton);\n\n // Wait - Thread sleep\n WaitHelpers.waitJVM(5000);\n\n }\n\n}"
+ },
+ {
+  "id": "playwright-005",
+  "source_type": "playwright",
+  "label": "playwright.config.ts:1",
+  "text": "import { defineConfig, devices } from '@playwright/test';\nimport * as dotenv from 'dotenv';\n\ndotenv.config();\n\nexport default defineConfig({\n testDir: './src/tests',\n timeout: 60000,\n expect: { timeout: 10000 },\n fullyParallel: true,\n forbidOnly: !!process.env.CI,\n retries: process.env.CI ? 2 : 0,\n workers: process.env.CI ? 2 : 3,\n\n reporter: [\n ['./src/utils/CustomTTAReporter.ts'],\n ['html', { open: 'never' }],\n ['json', { outputFile: 'test-results/results.json' }],\n ['list'],\n ],\n\n use: {\n baseURL: process.env.BASE_URL || 'http://localhost:3000',\n screenshot: 'only-on-failure',\n video: 'retain-on-failure',\n trace: 'retain-on-failure',\n },\n\n projects: [\n { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },\n ],\n});"
+ },
+ {
+  "id": "playwright-006",
+  "source_type": "playwright",
+  "label": "AuthApi.ts:1",
+  "text": "import { ApiHelper, ApiContext } from '../utils/ApiHelper';\n\nexport interface LoginResponse {\n token: string;\n userId: string;\n expiresIn: number;\n}\n\nexport interface UserProfile {\n id: string;\n email: string;\n firstName: string;\n lastName: string;\n avatar?: string;\n createdAt: string;\n}\n\nexport interface RegisterRequest {\n email: string;\n password: string;\n firstName: string;\n lastName: string;\n}\n\nexport interface RegisterResponse {\n userId: string;\n message: string;\n}\n\nexport class AuthApi {\n private apiHelper: ApiHelper;\n private baseUrl: string;\n\n constructor(context: ApiContext, baseUrl: string) {\n this.apiHelper = new ApiHelper(context);\n this.baseUrl = baseUrl;\n }\n\n /**\n * Login via API and get auth token\n */\n async login(username: string, password: string): Promise<LoginResponse> {\n const response = await this.apiHelper.callApi({\n url: `${this.baseUrl}/api/auth/login`,\n method: 'POST',\n headers: { 'Content-Type': 'application/json' },\n data: { username, password },\n });\n\n if (response.status() !== 200) {\n throw new Error(`Login failed: ${response.status()}`);\n }\n\n return await response.json();\n }\n\n /**\n * Register a new user\n */\n async register(userData: RegisterRequest): Promise<RegisterResponse> {\n const response = await this.apiHelper.callApi({\n url: `${this."
+ },
+ {
+  "id": "playwright-007",
+  "source_type": "playwright",
+  "label": "index.ts:1",
+  "text": "export { AuthApi, LoginResponse, UserProfile, RegisterRequest, RegisterResponse } from './AuthApi';\nexport { ProductApi, Product, ProductListResponse, ProductSearchParams, Review } from './ProductApi';\nexport { OrderApi, Order, OrderItem, ShippingAddress, CreateOrderRequest, OrderListResponse } from './OrderApi';"
+ },
+ {
+  "id": "playwright-008",
+  "source_type": "playwright",
+  "label": "OrderApi.ts:1",
+  "text": "import { ApiHelper, ApiContext } from '../utils/ApiHelper';\n\nexport interface OrderItem {\n productId: string;\n productName: string;\n quantity: number;\n price: number;\n}\n\nexport interface ShippingAddress {\n firstName: string;\n lastName: string;\n address: string;\n city: string;\n state: string;\n zipCode: string;\n country: string;\n phone: string;\n}\n\nexport interface Order {\n id: string;\n userId: string;\n items: OrderItem[];\n shippingAddress: ShippingAddress;\n subtotal: number;\n shipping: number;\n tax: number;\n total: number;\n status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';\n createdAt: string;\n updatedAt: string;\n}\n\nexport interface CreateOrderRequest {\n items: { productId: string; quantity: number }[];\n shippingAddress: ShippingAddress;\n paymentMethodId: string;\n promoCode?: string;\n}\n\nexport interface OrderListResponse {\n orders: Order[];\n total: number;\n page: number;\n pageSize: number;\n}\n\nexport class OrderApi {\n private apiHelper: ApiHelper;\n private baseUrl: string;\n\n constructor(context: ApiContext, baseUrl: string) {\n this.apiHelper = new ApiHelper(context);\n this.baseUrl = baseUrl;\n }\n\n /**\n * Create a new order\n */\n async createOrder(token: string, orderData: CreateOrderRequest): Promise<Order> {\n const response = await this.apiHelper.callApi({\n url: `${this.baseUrl}/api/orders`,\n method"
+ },
+ {
+  "id": "playwright-009",
+  "source_type": "playwright",
+  "label": "ProductApi.ts:1",
+  "text": "import { ApiHelper, ApiContext } from '../utils/ApiHelper';\n\nexport interface Product {\n id: string;\n name: string;\n description: string;\n price: number;\n category: string;\n stock: number;\n images: string[];\n rating: number;\n reviewCount: number;\n}\n\nexport interface ProductListResponse {\n products: Product[];\n total: number;\n page: number;\n pageSize: number;\n}\n\nexport interface ProductSearchParams {\n query?: string;\n category?: string;\n minPrice?: number;\n maxPrice?: number;\n page?: number;\n pageSize?: number;\n sortBy?: 'price' | 'rating' | 'name' | 'createdAt';\n sortOrder?: 'asc' | 'desc';\n}\n\nexport interface Review {\n id: string;\n userId: string;\n userName: string;\n rating: number;\n comment: string;\n createdAt: string;\n}\n\nexport class ProductApi {\n private apiHelper: ApiHelper;\n private baseUrl: string;\n\n constructor(context: ApiContext, baseUrl: string) {\n this.apiHelper = new ApiHelper(context);\n this.baseUrl = baseUrl;\n }\n\n /**\n * Get a product by ID\n */\n async getProduct(productId: string): Promise<Product> {\n const response = await this.apiHelper.callApi({\n url: `${this.baseUrl}/api/products/${productId}`,\n method: 'GET',\n headers: { 'Content-Type': 'application/json' },\n });\n\n if (response.status() !== 200) {\n throw new Error(`Failed to get product: ${response.status()}`);\n }"
+ },
+ {
+  "id": "test_cases-010",
+  "source_type": "test_cases",
+  "label": "test_cases.csv rows 1-8",
+  "text": "TC-00001 [Medium] Payment & Checkout: Verify that a user can complete checkout with a valid credit card | steps: 1. Set up test data required to complete checkout with a valid credit card.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expectations. | expected: The system should log the event and notify the relevant stakeholders.\n\nTC-00002 [Medium] Data Validation: Verify that a user can verify phone number field enforces E.164 format | steps: 1. Navigate to the Data Validation section.\n2. Verify phone number field enforces E.164 format.\n3. Observe the system response.\n4. Verify the result against the expected outcome. | expected: The system should complete the action successfully and return a confirmation.\n\nTC-00003 [Blocker] Rate Limiting: Verify that a user can verify distributed rate limiting is consistent across nodes | steps: 1. Set up test data required to verify distributed rate limiting is consistent across nodes.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expect | expected: The system should recover gracefully and retry according to policy.\n\nTC-00004 [Medium] Performance: Verify that a user can measure response time for the search endpoint under 100 RPS | steps: 1. Set up test data required to measure response time for the search endpoint under 100 RPS.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expect | expected: The system should block the unauthorized action and record an audit entry.\n\nTC-00005"
+ },
+ {
+  "id": "test_cases-011",
+  "source_type": "test_cases",
+  "label": "test_cases.csv rows 9-16",
+  "text": "TC-00009 [Medium] Admin Dashboard: Verify that a user can revoke a user's admin privileges | steps: 1. Navigate to the Admin Dashboard section.\n2. Revoke a user's admin privileges.\n3. Observe the system response.\n4. Verify the result against the expected outcome. | expected: The system should match the documented API contract exactly.\n\nTC-00010 [High] User Profile: Verify that a user can merge two duplicate user accounts | steps: 1. Set up test data required to merge two duplicate user accounts.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expectations. | expected: The system should respond within the defined SLA and not degrade other requests.\n\nTC-00011 [High] Booking CRUD: Verify that a user can fetch a booking by ID and verify all fields | steps: 1. Navigate to the Booking CRUD section.\n2. Fetch a booking by ID and verify all fields.\n3. Observe the system response.\n4. Verify the result against the expected outcome. | expected: The system should log the event and notify the relevant stakeholders.\n\nTC-00012 [High] Localization: Verify that a user can verify fallback to English when a translation key is missing | steps: 1. Set up test data required to verify fallback to English when a translation key is missing.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expec | expected: The system should log the event and notify the relevant stakeholders.\n\nTC-00013 [High] Third-Party Integration: Verify that a user can verify Zendesk ticket is created on support form submissio"
+ },
+ {
+  "id": "test_cases-012",
+  "source_type": "test_cases",
+  "label": "test_cases.csv rows 17-24",
+  "text": "TC-00017 [Low] Rate Limiting: Verify that a user can verify rate limit resets after the configured window | steps: 1. Log in as a user with the required role.\n2. Attempt to verify rate limit resets after the configured window.\n3. Record any errors or warnings shown.\n4. Confirm the final state is correct. | expected: The system should recover gracefully and retry according to policy.\n\nTC-00018 [Low] User Profile: Verify that a user can verify GDPR data-export request returns complete profile | steps: 1. Navigate to the User Profile section.\n2. Verify GDPR data-export request returns complete profile.\n3. Observe the system response.\n4. Verify the result against the expected outcome. | expected: The system should match the documented API contract exactly.\n\nTC-00019 [High] Accessibility: Verify that a user can verify all images have descriptive alt text | steps: 1. Set up test data required to verify all images have descriptive alt text.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expectations. | expected: The system should match the documented API contract exactly.\n\nTC-00020 [Low] Session Management: Verify that a user can verify concurrent sessions on two devices are both valid | steps: 1. Set up test data required to verify concurrent sessions on two devices are both valid.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches expectati | expected: The system should return the correct HTTP status code and response payload.\n\nTC-00021 [High] Rate Limiting: Verify that a user"
+ },
+ {
+  "id": "test_cases-013",
+  "source_type": "test_cases",
+  "label": "test_cases.csv rows 25-32",
+  "text": "TC-00025 [Medium] Session Management: Verify that a user can verify remember-me extends session lifetime correctly | steps: 1. Prepare the environment (mock/stub external dependencies as needed).\n2. Execute the step to verify remember-me extends session lifetime correctly.\n3. Validate response time and payload.\n4. Clean up | expected: The system should log the event and notify the relevant stakeholders.\n\nTC-00026 [High] Payment & Checkout: Verify that a user can verify tax calculation for an international order | steps: 1. Prepare the environment (mock/stub external dependencies as needed).\n2. Execute the step to verify tax calculation for an international order.\n3. Validate response time and payload.\n4. Clean up tes | expected: The system should display a user-friendly message without leaking internals.\n\nTC-00027 [High] Payment & Checkout: Verify that a user can complete checkout with a valid credit card | steps: 1. Log in as a user with the required role.\n2. Attempt to complete checkout with a valid credit card.\n3. Record any errors or warnings shown.\n4. Confirm the final state is correct. | expected: The system should reject the request with a clear, actionable error message.\n\nTC-00028 [High] Data Validation: Verify that a user can verify Unicode input is stored and retrieved without corruption | steps: 1. Set up test data required to verify Unicode input is stored and retrieved without corruption.\n2. Trigger the action via the UI or API.\n3. Capture the response/logs.\n4. Assert the outcome matches ex | expected: The system should preserve data integrity and not leave par"
+ },
+ {
+  "id": "jira-014",
+  "source_type": "jira",
+  "label": "KAN-5",
+  "text": "VIVO V70 App Login Fails with 'Remember Me' Checked, Resulting in 500 Error\n\nWhen attempting to log in to the VIVO V70 mobile application with valid credentials and the 'Remember Me' checkbox selected, the application returns a 500 Internal Server Error. This issue does not occur when the 'Remember Me' checkbox is unselected. The expected behavior is successful login with 'Remember Me' functionality working as intended. Steps to Reproduce: 1. Open the VIVO V70 app. 2. Enter valid username and password. 3. Check the 'Remember Me' checkbox. 4. Click Submit/Login. Actual Result: 500 Internal Server Error. Expected Result: User should log in successfully with session persistence."
+ },
+ {
+  "id": "jira-015",
+  "source_type": "jira",
+  "label": "VWO-1001",
+  "text": "{\n \"key\": \"VWO-1001\",\n \"fields\": {\n \"summary\": \"Checkout fails with expired credit card showing generic error\",\n \"description\": \"When a user enters an expired credit card on the checkout page, the error shown is 'Something went wrong' instead of 'Card expired'. Steps: 1) Add item to cart 2) Proceed to checkout 3) Enter card 4111111111111111 with past expiry 4) Submit. Expected: specific 'Card expired' validation message. Actual: generic error, payment service logs show HTTP 402 from gateway.\",\n \"status\": {\n \"name\": \"Done\"\n },\n \"priority\": {\n \"name\": \"High\"\n },\n \"components\": [\n {\n \"name\": \"Payment & Checkout\"\n }\n ],\n \"labels\": [\n \"checkout\",\n \"validation\"\n ],\n \"created\": \"2026-03-02T10:15:00.000+0000\",\n \"comment\": {\n \"comments\": [\n {\n \"author\": {\n \"displayName\": \"Priya\"\n },\n \"body\": \"Root cause: gateway 402 responses were mapped to the generic error handler. Fixed by mapping decline codes to user-facing messages.\"\n },\n {\n \"author\": {\n \"displayName\": \"Sanjeev\"\n },\n \"body\": \"Regression test TC-00001 updated to cover expired card path.\"\n }\n ]\n }\n }\n}"
+ },
+ {
+  "id": "jira-016",
+  "source_type": "jira",
+  "label": "VWO-1042",
+  "text": "{\n \"key\": \"VWO-1042\",\n \"fields\": {\n \"summary\": \"Login page allows more than 5 failed attempts without lockout\",\n \"description\": \"Security requirement SR-9 mandates account lockout after 5 failed logins within 15 minutes. QA found 8 consecutive failures possible before lockout triggers. Rate limiter counts per app node instead of per account globally.\",\n \"status\": {\n \"name\": \"In Progress\"\n },\n \"priority\": {\n \"name\": \"Critical\"\n },\n \"components\": [\n {\n \"name\": \"Authentication\"\n }\n ],\n \"labels\": [\n \"security\",\n \"login\"\n ],\n \"created\": \"2026-04-11T09:00:00.000+0000\",\n \"comment\": {\n \"comments\": [\n {\n \"author\": {\n \"displayName\": \"Dev\"\n },\n \"body\": \"Moving the counter to Redis keyed by account id.\"\n }\n ]\n }\n }\n}"
+ },
+ {
+  "id": "jira-017",
+  "source_type": "jira",
+  "label": "VWO-1077",
+  "text": "{\n \"key\": \"VWO-1077\",\n \"fields\": {\n \"summary\": \"Flaky test: booking search intermittently times out on CI\",\n \"description\": \"test_search_available_rooms fails ~1 in 6 runs on Jenkins with TimeoutException waiting for #results-grid. Passes locally. Suspected slow test-env search index warmup; explicit wait is 5s.\",\n \"status\": {\n \"name\": \"To Do\"\n },\n \"priority\": {\n \"name\": \"Medium\"\n },\n \"components\": [\n {\n \"name\": \"Booking\"\n }\n ],\n \"labels\": [\n \"flaky-test\",\n \"ci\"\n ],\n \"created\": \"2026-05-20T14:30:00.000+0000\"\n }\n}"
+ },
+ {
+  "id": "docs-018",
+  "source_type": "docs",
+  "label": "qa-process-guide.md (part 1)",
+  "text": "# QA Process Guide\n\n## Bug triage\n\nBugs are triaged every weekday at 10:00 IST. Severity is set by QA, priority by\nthe product owner. Any Critical bug blocks the release train until a fix or a\ndocumented waiver from the engineering manager exists.\n\n## Definition of done for a story\n\n1. Acceptance criteria in the PRD verified.\n2. Automated coverage added to the Seleniu"
+ },
+ {
+  "id": "docs-019",
+  "source_type": "docs",
+  "label": "qa-process-guide.md (part 2)",
+  "text": "m or Playwright suite (smoke tag if\n the flow is revenue-critical).\n3. Regression suite green on Jenkins.\n4. RTM row updated linking requirement \u2192 test cases \u2192 build.\n\n## Flaky test policy\n\nA test that fails then passes on rerun twice within a week is labelled\n`flaky-test` in JIRA, quarantined out of the smoke suite, and must be fixed or\ndeleted within two sprints."
+ },
+ {
+  "id": "transcripts-020",
+  "source_type": "transcripts",
+  "label": "2026-06-12-sprint-retro.txt",
+  "text": "Sprint 42 retro \u2014 2026-06-12\n\nPriya: Biggest win this sprint was cutting the smoke suite from 40 to 22 minutes by parallelising the Playwright shards.\nSanjeev: The checkout regression escaped because the expired-card path had no automated test. We agreed every payment-gateway decline code needs a test case.\nRahul: Jenkins agents ran out of disk twice; infra will add a nightly workspace cleanup job.\nPriya: Flaky booking search test (VWO-1077) is quarantined. Root cause still unknown, suspect environment index warmup.\nAction items: 1) Payment decline-code test matrix owned by Sanjeev, due sprint 43. 2) Infra cleanup job owned by Rahul. 3) Retro on flaky quarantine policy next month."
+ },
+ {
+  "id": "transcripts-021",
+  "source_type": "transcripts",
+  "label": "sample_sprint42_planning.md",
+  "text": "# Sprint 42 planning notes (2026-07-10)\n\n[00:02] Pramod: Top priority this sprint is stabilizing the checkout suite. applyCouponTest is flaky on about 30% of nightly runs, tracked as VWO-2002.\n[00:05] Priya: The root cause is the coupon banner loading asynchronously. I will replace the Thread.sleep calls with explicit waits on presenceOfElementLocated and add the @flaky quarantine tag until the fix lands.\n[00:09] Rahul: Reminder that per our flaky test policy, three consecutive intermittent failures means quarantine plus an owner. I am taking VWO-2002.\n[00:11] Rahul: Second item, the RTM needs updating for the new A/B goal tracking section in the PRD (section 4). VWO-2003 added regression cases TC-3321 and TC-3322, they must be linked to requirement R-114.\n[00:14] Pramod: Coverage target for the payment module is 80% this quarter. Current Copilot-assisted flow gets us roughly 30-40%; once QABuddy RAG context is wired into reviews we expect 70-80%.\n[00:18] Priya: For onboarding, the two new joiners should self-serve from QABuddy instead of pinging seniors: framework setup, locator conventions, and how to run the nightly suite.\n[00:21] Pramod: Action items: Priya fixes VWO-2002 waits, Rahul updates RTM for R-114, everyone reviews the login error toast failure from Jenkins build #128 before Thursday."
+ },
+ {
+  "id": "lucid-022",
+  "source_type": "lucid",
+  "label": "checkout-flow-diagram.txt",
+  "text": "Lucid chart export: Checkout flow (v3)\n\n[Cart] -> [Address step] -> [Payment step] -> [Review] -> [Place order]\nPayment step branches:\n - Card valid -> gateway authorize -> success -> Review\n - Card declined (402) -> map decline code -> show specific validation message -> stay on Payment step\n - Gateway timeout (>8s) -> retry once -> if second timeout, show \"payment unavailable\" and preserve cart\nNotes: decline-code mapping added after VWO-1001. All error paths must preserve cart contents."
+ },
+ {
+  "id": "prd-023",
+  "source_type": "prd",
+  "label": "prd-password-reset.md (part 1)",
+  "text": "# PRD: Password Reset (v1.2)\n\n## FR-1 Request reset\n\nA user may request a password reset from the login page by entering their\nregistered email. The system always shows the same confirmation message whether\nor not the email exists (no account enumeration).\n\n## FR-2 Reset link\n\nThe reset link is single-use, expire"
+ },
+ {
+  "id": "prd-024",
+  "source_type": "prd",
+  "label": "prd-password-reset.md (part 2)",
+  "text": "s after 30 minutes, and is invalidated if a\nnewer link is issued.\n\n## FR-3 New password rules\n\nMinimum 12 characters, at least one number and one symbol; the previous 5\npasswords may not be reused. On success all active sessions are revoked.\n\n## NFR-1\n\nThe reset email must be dispatched within 60 seconds at p95."
+ },
+ {
+  "id": "jenkins-025",
+  "source_type": "jenkins",
+  "label": "regression-suite-build_412 (head)",
+  "text": "Started by timer\nRunning on agent linux-qa-03 in /workspace/regression-suite\n[Pipeline] stage (Checkout tests)\n2026-06-14T02:11:04.512Z Running TestSuite: CheckoutRegressionTest\nTests run: 24, Failures: 1, Errors: 0, Skipped: 0\nFAILED: testExpiredCardShowsSpecificError(CheckoutRegressionTest)\norg.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.cssSelector: .card-error-message (tried for 10 second(s) with 500 milliseconds interval)\n at org.openqa.selenium.support.ui.WebDriverWait.timeoutException(WebDriverWait.java:84)\n at org.openqa.selenium.support.ui.FluentWait.until(FluentWait.java:228)\n at pages.CheckoutPage.getCardError(CheckoutPage.java:58)\n at tests.CheckoutRegressionTest.testExpiredCardShowsSpecificError(CheckoutRegressionTest.java:112)\n[Pipeline] stage (Booking tests)\nRunning TestSuite: BookingSearchTest\nTests run: 12, Failures: 0, Errors: 0, Skipped: 1\nPASSED: all booking tests (1 quarantined: test_search_available_rooms)\nBUILD FAILURE\nFinished: FAILURE"
+ },
+ {
+  "id": "jenkins-026",
+  "source_type": "jenkins",
+  "label": "regression-suite-build_412 (failures)",
+  "text": "Tests run: 24, Failures: 1, Errors: 0, Skipped: 0\nFAILED: testExpiredCardShowsSpecificError(CheckoutRegressionTest)\norg.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.cssSelector: .card-error-message (tried for 10 second(s) with 500 milliseconds interval)\n at org.openqa.selenium.support.ui.WebDriverWait.timeoutException(WebDriverWait.java:84)\n at pages.CheckoutPage.getCardError(CheckoutPage.java:58)\n at tests.CheckoutRegressionTest.testExpiredCardShowsSpecificError(CheckoutRegressionTest.java:112)\nTests run: 12, Failures: 0, Errors: 0, Skipped: 1\nBUILD FAILURE\nFinished: FAILURE"
+ },
+ {
+  "id": "glossary-027",
+  "source_type": "glossary",
+  "label": "glossary.md (part 1)",
+  "text": "# Company terminology (injected into QABuddy's system prompt)\n\nEdit this file with your team's real terms \u2014 one line each, keep it short\n(every line costs tokens on every question).\n\n- VWO: the product under test (A/B testing / experiment"
+ },
+ {
+  "id": "glossary-028",
+  "source_type": "glossary",
+  "label": "glossary.md (part 2)",
+  "text": "ation platform)\n- TC: test case\n- RTM: requirements traceability matrix\n- RCA: root cause analysis\n- Smoke suite: the fast pre-merge Selenium/Playwright test set\n- Flaky test: a test that passes and fails across runs without a code change"
+ }
+]
