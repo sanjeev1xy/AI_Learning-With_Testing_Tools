@@ -1,0 +1,161 @@
+id,jira_id,priority,module,title,steps,expected,tags
+TC-00001,VWO-1001,Medium,Payment & Checkout,Verify that a user can complete checkout with a valid credit card,"1. Set up test data required to complete checkout with a valid credit card.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should log the event and notify the relevant stakeholders.,negative;ui
+TC-00002,VWO-1002,Medium,Data Validation,Verify that a user can verify phone number field enforces E.164 format,"1. Navigate to the Data Validation section.
+2. Verify phone number field enforces E.164 format.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should complete the action successfully and return a confirmation.,mobile;ui
+TC-00003,VWO-1003,Blocker,Rate Limiting,Verify that a user can verify distributed rate limiting is consistent across nodes,"1. Set up test data required to verify distributed rate limiting is consistent across nodes.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should recover gracefully and retry according to policy.,accessibility;data-driven;edge-case
+TC-00004,VWO-1004,Medium,Performance,Verify that a user can measure response time for the search endpoint under 100 RPS,"1. Set up test data required to measure response time for the search endpoint under 100 RPS.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should block the unauthorized action and record an audit entry.,api;critical-path;ui
+TC-00005,VWO-1005,Critical,Mobile App,Verify that a user can verify push notification deep-links to the correct screen,"1. Navigate to the Mobile App section.
+2. Verify push notification deep-links to the correct screen.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should respond within the defined SLA and not degrade other requests.,automation-candidate;critical-path;smoke
+TC-00006,VWO-1006,Critical,File Upload,Verify that a user can verify concurrent uploads to the same folder don't collide,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify concurrent uploads to the same folder don't collide.
+3. Validate response time and payload.
+4. Clean up test data.","The system should reject the request with a clear, actionable error message.",data-driven;edge-case;manual-only;negative
+TC-00007,VWO-1007,High,Accessibility,Verify that a user can verify video content has closed captions available,"1. Navigate to the Accessibility section.
+2. Verify video content has closed captions available.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should complete the action successfully and return a confirmation.,accessibility;automation-candidate;regression;security
+TC-00008,VWO-1008,High,API Integration,Verify that a user can verify GET /booking/{id} returns 404 for a missing booking,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify GET /booking/{id} returns 404 for a missing booking.
+3. Validate response time and payload.
+4. Clean up test data.",The system should respond within the defined SLA and not degrade other requests.,performance;positive
+TC-00009,VWO-1009,Medium,Admin Dashboard,Verify that a user can revoke a user's admin privileges,"1. Navigate to the Admin Dashboard section.
+2. Revoke a user's admin privileges.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should match the documented API contract exactly.,critical-path;performance;positive;ui
+TC-00010,VWO-1010,High,User Profile,Verify that a user can merge two duplicate user accounts,"1. Set up test data required to merge two duplicate user accounts.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should respond within the defined SLA and not degrade other requests.,accessibility;manual-only
+TC-00011,VWO-1011,High,Booking CRUD,Verify that a user can fetch a booking by ID and verify all fields,"1. Navigate to the Booking CRUD section.
+2. Fetch a booking by ID and verify all fields.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should log the event and notify the relevant stakeholders.,accessibility;data-driven;negative;ui
+TC-00012,VWO-1012,High,Localization,Verify that a user can verify fallback to English when a translation key is missing,"1. Set up test data required to verify fallback to English when a translation key is missing.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should log the event and notify the relevant stakeholders.,critical-path;edge-case;mobile;positive
+TC-00013,VWO-1013,High,Third-Party Integration,Verify that a user can verify Zendesk ticket is created on support form submission,"1. Set up test data required to verify Zendesk ticket is created on support form submission.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should recover gracefully and retry according to policy.,api;automation-candidate;smoke
+TC-00014,VWO-1014,Medium,Payment & Checkout,Verify that a user can apply a valid discount coupon at checkout,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to apply a valid discount coupon at checkout.
+3. Validate response time and payload.
+4. Clean up test data.",The system should match the documented API contract exactly.,automation-candidate;mobile
+TC-00015,VWO-1015,Medium,Regression Suite,Verify that a user can verify file upload after the storage backend migration,"1. Navigate to the Regression Suite section.
+2. Verify file upload after the storage backend migration.
+3. Observe the system response.
+4. Verify the result against the expected outcome.","The system should reject the request with a clear, actionable error message.",automation-candidate;critical-path;negative;performance
+TC-00016,VWO-1016,Medium,Payment & Checkout,Verify that a user can process a refund for a cancelled order,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to process a refund for a cancelled order.
+3. Validate response time and payload.
+4. Clean up test data.",The system should complete the action successfully and return a confirmation.,api;automation-candidate;critical-path;data-driven
+TC-00017,VWO-1017,Low,Rate Limiting,Verify that a user can verify rate limit resets after the configured window,"1. Log in as a user with the required role.
+2. Attempt to verify rate limit resets after the configured window.
+3. Record any errors or warnings shown.
+4. Confirm the final state is correct.",The system should recover gracefully and retry according to policy.,api;automation-candidate;mobile;performance
+TC-00018,VWO-1018,Low,User Profile,Verify that a user can verify GDPR data-export request returns complete profile,"1. Navigate to the User Profile section.
+2. Verify GDPR data-export request returns complete profile.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should match the documented API contract exactly.,data-driven;regression;smoke
+TC-00019,VWO-1019,High,Accessibility,Verify that a user can verify all images have descriptive alt text,"1. Set up test data required to verify all images have descriptive alt text.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should match the documented API contract exactly.,api;positive
+TC-00020,VWO-1020,Low,Session Management,Verify that a user can verify concurrent sessions on two devices are both valid,"1. Set up test data required to verify concurrent sessions on two devices are both valid.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should return the correct HTTP status code and response payload.,api;critical-path;data-driven;security
+TC-00021,VWO-1021,High,Rate Limiting,Verify that a user can verify distributed rate limiting is consistent across nodes,"1. Set up test data required to verify distributed rate limiting is consistent across nodes.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should recover gracefully and retry according to policy.,data-driven;mobile;positive;security
+TC-00022,VWO-1022,Low,Accessibility,Verify that a user can verify modal dialogs trap focus correctly,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify modal dialogs trap focus correctly.
+3. Validate response time and payload.
+4. Clean up test data.","The system should reject the request with a clear, actionable error message.",accessibility;regression
+TC-00023,VWO-1023,Medium,Mobile App,Verify that a user can verify booking flow works offline and syncs on reconnect,"1. Set up test data required to verify booking flow works offline and syncs on reconnect.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should match the documented API contract exactly.,regression;smoke
+TC-00024,VWO-1024,Critical,Booking CRUD,Verify that a user can delete a booking using a valid booking ID,"1. Navigate to the Booking CRUD section.
+2. Delete a booking using a valid booking ID.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should respond within the defined SLA and not degrade other requests.,accessibility;security
+TC-00025,VWO-1025,Medium,Session Management,Verify that a user can verify remember-me extends session lifetime correctly,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify remember-me extends session lifetime correctly.
+3. Validate response time and payload.
+4. Clean up test data.",The system should log the event and notify the relevant stakeholders.,manual-only;regression;ui
+TC-00026,VWO-1026,High,Payment & Checkout,Verify that a user can verify tax calculation for an international order,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify tax calculation for an international order.
+3. Validate response time and payload.
+4. Clean up test data.",The system should display a user-friendly message without leaking internals.,flaky-history;manual-only;negative;regression
+TC-00027,VWO-1027,High,Payment & Checkout,Verify that a user can complete checkout with a valid credit card,"1. Log in as a user with the required role.
+2. Attempt to complete checkout with a valid credit card.
+3. Record any errors or warnings shown.
+4. Confirm the final state is correct.","The system should reject the request with a clear, actionable error message.",mobile;ui
+TC-00028,VWO-1028,High,Data Validation,Verify that a user can verify Unicode input is stored and retrieved without corruption,"1. Set up test data required to verify Unicode input is stored and retrieved without corruption.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should preserve data integrity and not leave partial state.,accessibility;manual-only;regression
+TC-00029,VWO-1029,Critical,File Upload,Verify that a user can verify concurrent uploads to the same folder don't collide,"1. Navigate to the File Upload section.
+2. Verify concurrent uploads to the same folder don't collide.
+3. Observe the system response.
+4. Verify the result against the expected outcome.","The system should reject the request with a clear, actionable error message.",mobile;performance
+TC-00030,VWO-1030,High,Session Management,Verify that a user can verify session data is not leaked across user accounts,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify session data is not leaked across user accounts.
+3. Validate response time and payload.
+4. Clean up test data.",The system should complete the action successfully and return a confirmation.,automation-candidate;smoke
+TC-00031,VWO-1031,Low,Localization,Verify that a user can verify translated error messages match the source meaning,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify translated error messages match the source meaning.
+3. Validate response time and payload.
+4. Clean up test data.",The system should preserve data integrity and not leave partial state.,api;data-driven;ui
+TC-00032,VWO-1032,Low,Security,Verify that a user can verify sensitive fields are excluded from API responses,"1. Navigate to the Security section.
+2. Verify sensitive fields are excluded from API responses.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should respond within the defined SLA and not degrade other requests.,edge-case;regression
+TC-00033,VWO-1033,Low,Session Management,Verify that a user can verify idle timeout warning appears before forced logout,"1. Set up test data required to verify idle timeout warning appears before forced logout.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should complete the action successfully and return a confirmation.,api;data-driven;manual-only;regression
+TC-00034,VWO-1034,Medium,Regression Suite,Verify that a user can verify checkout total calculation after the tax engine migration,"1. Set up test data required to verify checkout total calculation after the tax engine migration.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should block the unauthorized action and record an audit entry.,accessibility;edge-case
+TC-00035,VWO-1035,Medium,Regression Suite,Verify that a user can verify booking creation still works after the auth service upgrade,"1. Prepare the environment (mock/stub external dependencies as needed).
+2. Execute the step to verify booking creation still works after the auth service upgrade.
+3. Validate response time and payload.
+4. Clean up test data.",The system should match the documented API contract exactly.,flaky-history;negative;security;ui
+TC-00036,VWO-1036,High,Mobile App,Verify that a user can verify biometric login works on supported devices,"1. Set up test data required to verify biometric login works on supported devices.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should preserve data integrity and not leave partial state.,automation-candidate;flaky-history;negative
+TC-00037,VWO-1037,Medium,Search & Filters,Verify that a user can search test cases by keyword in the title,"1. Navigate to the Search & Filters section.
+2. Search test cases by keyword in the title.
+3. Observe the system response.
+4. Verify the result against the expected outcome.","The system should reject the request with a clear, actionable error message.",api;critical-path;mobile;security
+TC-00038,VWO-1038,Low,Accessibility,Verify that a user can verify color contrast meets WCAG AA on the checkout page,"1. Log in as a user with the required role.
+2. Attempt to verify color contrast meets WCAG AA on the checkout page.
+3. Record any errors or warnings shown.
+4. Confirm the final state is correct.",The system should preserve data integrity and not leave partial state.,flaky-history;manual-only
+TC-00039,VWO-1039,Medium,Data Validation,Verify that a user can verify numeric fields reject non-numeric input,"1. Navigate to the Data Validation section.
+2. Verify numeric fields reject non-numeric input.
+3. Observe the system response.
+4. Verify the result against the expected outcome.",The system should recover gracefully and retry according to policy.,api;flaky-history;ui
+TC-00040,VWO-1040,Low,Performance,Verify that a user can measure p95 latency for checkout under peak load,"1. Set up test data required to measure p95 latency for checkout under peak load.
+2. Trigger the action via the UI or API.
+3. Capture the response/logs.
+4. Assert the outcome matches expectations.",The system should preserve data integrity and not leave partial state.,mobile;performance;positive

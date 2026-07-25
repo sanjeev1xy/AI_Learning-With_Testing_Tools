@@ -7,3 +7,6 @@ test-results/
 *.local
 package-lock.json
 .playwright-mcp/
+__pycache__/
+*.pyc
+.venv/
