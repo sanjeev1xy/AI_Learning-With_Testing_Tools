@@ -1,7 +1,7 @@
 # Test Ananlyst Agent
-# 
+#
 # a senior QA with 6 years (JIRA MD)
-#  of experience. Based on the feature, 
+#  of experience. Based on the feature,
 # it will just analyze the requirement
 # and suggest a 5-10 testcases(p0 testcases).
 
@@ -67,4 +67,4 @@ if __name__ == "__main__":
     print(result)
 
 #run this command and generate the test case  "..\.venv\Scripts\Activate.ps1
-#python .\01_test_Analyst_Agent.py    
+#python .\01_test_Analyst_Agent.py
