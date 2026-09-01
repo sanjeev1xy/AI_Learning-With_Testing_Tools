@@ -10,3 +10,11 @@ package-lock.json
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Jira QA Crew
+P17.CrewAI/outputs/*/
+P17.CrewAI/.streamlit/secrets.toml
+P17.CrewAI/node_modules/

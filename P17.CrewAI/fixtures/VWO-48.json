@@ -1,0 +1,78 @@
+{
+  "key": "VWO-48",
+  "_url": "https://demo.invalid/browse/VWO-48",
+  "_acceptance_criteria_field": "customfield_10101",
+  "fields": {
+    "summary": "Cart total shows $0.00 after applying discount code when cart has 3+ items",
+    "issuetype": { "name": "Bug" },
+    "status": { "name": "Open" },
+    "priority": { "name": "High" },
+    "labels": ["checkout", "pricing", "regression", "v2.4.1"],
+    "components": [{ "name": "Checkout" }, { "name": "Pricing" }],
+    "parent": { "key": "VWO-40" },
+    "subtasks": [],
+    "issuelinks": [
+      { "outwardIssue": { "key": "VWO-31" } }
+    ],
+    "customfield_10101": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "bulletList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-1: With 3 or more items in the cart and a valid discount code applied, the order-summary total must equal subtotal minus the discount percentage, matching the pricing API response body." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-2: The displayed total must never render as $0.00 when the pricing API returns a non-zero total." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-3: Behaviour for carts with 1 or 2 items must remain unchanged (total already correct)." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-4: Removing an item so the cart drops below 3 items must show the correct total without re-applying the code." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-5: The total shown in the order-summary panel and on the payment step must match." } ] } ] }
+          ]
+        }
+      ]
+    },
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Summary" } ] },
+        { "type": "paragraph", "content": [ { "type": "text", "text": "Cart total displays \"$0.00\" instead of the discounted amount when the cart has 3 or more items and a discount code is applied. The user cannot tell what they will be charged. Proceeding to the payment step still shows $0.00 in the summary." } ] },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Environment" } ] },
+        { "type": "paragraph", "content": [ { "type": "text", "text": "Production, Chrome 120, Windows 11. Also reproduced on Firefox 121." } ] },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Steps to Reproduce" } ] },
+        {
+          "type": "orderedList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Add 3 or more items to the shopping cart (subtotal > $50)." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Apply discount code \"SAVE20\" (20% off the order)." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Observe the cart total in the order summary panel." } ] } ] }
+          ]
+        },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Actual Result" } ] },
+        { "type": "paragraph", "content": [ { "type": "text", "text": "Cart total displays \"$0.00\". Proceeding to payment still shows $0.00." } ] },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Expected Result" } ] },
+        { "type": "paragraph", "content": [ { "type": "text", "text": "Cart total should show the original subtotal minus 20% (e.g. subtotal $60.00 -> total $48.00), matching the value returned by the pricing API." } ] },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Additional Info" } ] },
+        {
+          "type": "bulletList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Happens only when the cart has 3 or more items. Works correctly with 1-2 items." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Started after last Friday's deployment (v2.4.1). Was fine on v2.4.0." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "No errors in the browser console." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "The pricing API response (POST /api/v3/cart/price) shows the CORRECT discounted amount in its JSON body; only the on-screen total is wrong." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Removing one item so the cart drops to 2 items makes the correct total appear again immediately, without re-applying the code." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Reproduced on 5/5 attempts. Also reproduced by a second tester on Firefox 121." } ] } ] }
+          ]
+        }
+      ]
+    }
+  },
+  "_comments": [
+    {
+      "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Dev note: order-summary component reads total from a cached selector that is only invalidated for carts under 3 items. Likely a memoisation key bug introduced in v2.4.1." } ] } ]
+      }
+    }
+  ]
+}

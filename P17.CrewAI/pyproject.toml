@@ -1,0 +1,50 @@
+[project]
+name = "jira-qa-crew"
+version = "1.0.0"
+description = "AI-powered QA artifact generator: Jira -> CrewAI -> test plan, test cases, traceability, Playwright"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "crewai>=1.15,<2.0",
+    "streamlit>=1.40,<2.0",
+    "pydantic>=2.7,<3.0",
+    "python-dotenv>=1.0",
+    "requests>=2.31",
+    "pandas>=2.1",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2"]
+dev = ["pytest>=8.0", "ruff>=0.6", "pytest-cov>=5.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = [
+    "01_test_Analyst_Agent.py",
+    "02_Research_write_AI_Agent.py",
+    "03_Build_QABugTriageCrew.py",
+    "04_Build_QABugTriageCrew_Prod.py",
+    "05_QAPipeline_TP_TC_TW_PW.py",
+    "Crew_AI_QA_Pipeline",
+    "outputs",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "C4", "SIM", "PTH"]
+ignore = ["B008", "SIM117", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+python_classes = []
+filterwarnings = ["ignore::DeprecationWarning"]

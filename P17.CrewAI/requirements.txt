@@ -1,0 +1,10 @@
+# Streamlit Community Cloud deployment requirements.
+# Pinned to a mutually compatible set (resolved 2026-08).
+crewai>=1.15,<2.0
+streamlit>=1.40,<2.0
+pydantic>=2.7,<3.0
+python-dotenv>=1.0
+requests>=2.31
+pandas>=2.1
+PyYAML>=6.0
+mcp>=1.2            # optional Jira MCP transport; app degrades gracefully if absent

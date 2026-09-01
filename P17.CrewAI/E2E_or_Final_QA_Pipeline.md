@@ -396,7 +396,7 @@ Keep generated ZIP data reasonably sized and generate it only when required.
 
 ### 7. Artifact Structure
 
-Create artifacts using this structure:
+Create artifacts using this structure
 
 ```text
 outputs/

@@ -1,0 +1,48 @@
+{
+  "key": "VWO-49",
+  "_url": "https://demo.invalid/browse/VWO-49",
+  "_acceptance_criteria_field": "customfield_10101",
+  "fields": {
+    "summary": "Add 'Remember me' option to the login form",
+    "issuetype": { "name": "Story" },
+    "status": { "name": "In Progress" },
+    "priority": { "name": "Medium" },
+    "labels": ["auth", "login", "frontend"],
+    "components": [{ "name": "Authentication" }],
+    "parent": { "key": "VWO-41" },
+    "subtasks": [{ "key": "VWO-52" }],
+    "issuelinks": [],
+    "customfield_10101": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "bulletList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-1: The login form shows an unchecked 'Remember me' checkbox below the password field." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-2: When 'Remember me' is checked and login succeeds, the session persists for 30 days." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-3: When 'Remember me' is unchecked, the session expires when the browser closes." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "AC-4: The checkbox is keyboard reachable and has an accessible label." } ] } ] }
+          ]
+        }
+      ]
+    },
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        { "type": "paragraph", "content": [ { "type": "text", "text": "As a returning user I want a 'Remember me' option on the login form so that I do not have to re-enter my credentials every day." } ] },
+        { "type": "heading", "attrs": { "level": 3 }, "content": [ { "type": "text", "text": "Notes" } ] },
+        {
+          "type": "bulletList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "The persistent session cookie must be HttpOnly and Secure." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Exact 30-day value to be confirmed with security team." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Visual design mockups are not yet attached to this ticket." } ] } ] }
+          ]
+        }
+      ]
+    }
+  },
+  "_comments": []
+}
