@@ -1,0 +1,14 @@
+# Subsystem C — DeepEval Framework
+# Unpinned on purpose: pinned builds of pydantic-core / chromadb have no
+# Python 3.14 wheels. Let the resolver pick 3.14-compatible versions.
+deepeval
+pytest
+pytest-asyncio
+python-dotenv
+httpx           # targets/ HTTP clients for the chatbot + RAG
+
+# dashboard (port 8203)
+fastapi
+uvicorn[standard]
+jinja2>=3.1.6
+python-multipart

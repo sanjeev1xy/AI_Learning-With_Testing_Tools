@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the DeepEval Framework works</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --card:#fff; --ink:#20242c; --muted:#5f6672; --line:#e5e2da;
+    --accent:#d05a33; --accent-soft:#f7ede8; --code-bg:#f0eee9;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#16181c; --card:#1e2126; --ink:#e8e8ec; --muted:#9aa0aa;
+      --line:#31353d; --accent:#e87350; --accent-soft:#2a211c; --code-bg:#24272d;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:44px 22px 90px}
+  h1{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}
+  .lede{color:var(--muted);font-size:16px;margin:0 0 34px}
+  h2{font-size:19px;margin:40px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+  h3{font-size:15px;margin:22px 0 6px}
+  p{margin:0 0 14px}
+  code{background:var(--code-bg);padding:1px 6px;border-radius:5px;font-size:13.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow-x:auto;font-size:13px;line-height:1.5}
+  pre code{background:none;padding:0}
+  a{color:var(--accent)}
+  ul{margin:0 0 14px;padding-left:22px} li{margin:4px 0}
+  figure{margin:26px 0;padding:20px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px}
+  figure svg{display:block;width:100%;height:auto;color:var(--ink)}
+  figcaption{margin-top:12px;font-size:13px;color:var(--muted);text-align:center}
+  table{border-collapse:collapse;width:100%;margin:6px 0 16px;font-size:13.5px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  .accent{color:var(--accent)}
+  .pillbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+  .pillbar span{background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:12.5px}
+  .back{font-size:13px;display:inline-block;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./index.html">← dashboard snapshot</a>
+  <h1>How the DeepEval Framework works</h1>
+  <p class="lede">Subsystem C of <code>P20.DeepEval_Framework</code>. It scores two
+  live LLM apps — a support chatbot and a RAG pipeline — with a separate judge
+  LLM, and reports the result as a pytest suite and a web dashboard.</p>
+
+  <div class="pillbar">
+    <span>25 metrics</span><span>2 targets</span><span>1 judge</span>
+    <span>263 pytest cases</span><span>5 categories</span>
+  </div>
+
+  <h2>The pipeline</h2>
+  <p>One evaluation of one metric is a single pass through this pipeline. The
+  <span class="accent">judge</span> is a different model from the app being
+  tested — both hosted on Groq — because a judge scoring its own model family
+  inflates the score.</p>
+
+  <figure>
+    <svg viewBox="0 0 900 430" role="img"
+      aria-label="A dataset case flows to a target LLM which returns a reply; the reply plus the case become a test case that a separate judge LLM scores; the score is compared to a threshold to produce a verdict shown on the dashboard and asserted by pytest.">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+          markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+          markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#d05a33"/>
+        </marker>
+      </defs>
+
+      <!-- row 1: datasets -->
+      <rect x="20" y="30" width="150" height="72" rx="9" fill="none" stroke="currentColor"/>
+      <text x="95" y="55" text-anchor="middle" font-size="12.5" font-weight="700">datasets/</text>
+      <text x="95" y="73" text-anchor="middle" font-size="10.5">goldens · attacks</text>
+      <text x="95" y="88" text-anchor="middle" font-size="10.5">conversations</text>
+
+      <!-- metric spec -->
+      <rect x="20" y="150" width="150" height="72" rx="9" fill="none" stroke="currentColor"/>
+      <text x="95" y="175" text-anchor="middle" font-size="12.5" font-weight="700">MetricSpec</text>
+      <text x="95" y="193" text-anchor="middle" font-size="10.5">.cases()</text>
+      <text x="95" y="208" text-anchor="middle" font-size="10.5">.build_case() .build_metric()</text>
+
+      <line x1="95" y1="102" x2="95" y2="148" stroke="currentColor" marker-end="url(#ah)"/>
+
+      <!-- target -->
+      <rect x="250" y="90" width="180" height="96" rx="9" fill="none" stroke="currentColor"/>
+      <text x="340" y="116" text-anchor="middle" font-size="12.5" font-weight="700">target LLM</text>
+      <text x="340" y="135" text-anchor="middle" font-size="10.5">ChatbotTarget :8201</text>
+      <text x="340" y="150" text-anchor="middle" font-size="10.5">RagTarget :8202</text>
+      <text x="340" y="171" text-anchor="middle" font-size="10" fill="#8a8f98">qwen/qwen3.8-27b (Groq)</text>
+
+      <line x1="170" y1="138" x2="248" y2="138" stroke="currentColor" marker-end="url(#ah)"/>
+      <text x="209" y="130" text-anchor="middle" font-size="10">prompt</text>
+
+      <!-- test case -->
+      <rect x="250" y="240" width="180" height="80" rx="9" fill="none" stroke="currentColor"/>
+      <text x="340" y="266" text-anchor="middle" font-size="12.5" font-weight="700">LLMTestCase</text>
+      <text x="340" y="284" text-anchor="middle" font-size="10.5">input · actual_output</text>
+      <text x="340" y="299" text-anchor="middle" font-size="10.5">expected · retrieval_context</text>
+
+      <line x1="340" y1="186" x2="340" y2="238" stroke="currentColor" marker-end="url(#ah)"/>
+      <text x="392" y="216" text-anchor="middle" font-size="10">reply (+ chunks)</text>
+      <line x1="150" y1="200" x2="250" y2="262" stroke="currentColor" marker-end="url(#ah)"/>
+
+      <!-- judge -->
+      <rect x="510" y="240" width="180" height="80" rx="9" fill="none" stroke="#d05a33"/>
+      <text x="600" y="266" text-anchor="middle" font-size="12.5" font-weight="700" fill="#d05a33">judge LLM</text>
+      <text x="600" y="284" text-anchor="middle" font-size="10.5" fill="#d05a33">metric.measure()</text>
+      <text x="600" y="299" text-anchor="middle" font-size="10" fill="#d05a33">openai/gpt-oss-120b (Groq)</text>
+
+      <line x1="430" y1="280" x2="508" y2="280" stroke="#d05a33" marker-end="url(#ah-a)"/>
+
+      <!-- verdict -->
+      <rect x="510" y="90" width="180" height="96" rx="9" fill="none" stroke="currentColor"/>
+      <text x="600" y="120" text-anchor="middle" font-size="12.5" font-weight="700">score vs threshold</text>
+      <text x="600" y="141" text-anchor="middle" font-size="10.5">0.0 – 1.0  +  reason</text>
+      <text x="600" y="162" text-anchor="middle" font-size="11" font-weight="700">PASS / FAIL</text>
+
+      <line x1="600" y1="238" x2="600" y2="188" stroke="#d05a33" marker-end="url(#ah-a)"/>
+      <text x="655" y="216" text-anchor="middle" font-size="10" fill="#d05a33">score</text>
+
+      <!-- outputs -->
+      <rect x="770" y="30" width="110" height="66" rx="9" fill="none" stroke="currentColor"/>
+      <text x="825" y="58" text-anchor="middle" font-size="11.5" font-weight="700">dashboard</text>
+      <text x="825" y="75" text-anchor="middle" font-size="10">:8203 cards</text>
+
+      <rect x="770" y="150" width="110" height="66" rx="9" fill="none" stroke="currentColor"/>
+      <text x="825" y="178" text-anchor="middle" font-size="11.5" font-weight="700">pytest</text>
+      <text x="825" y="195" text-anchor="middle" font-size="10">assert_test</text>
+
+      <line x1="690" y1="120" x2="768" y2="70" stroke="currentColor" marker-end="url(#ah)"/>
+      <line x1="690" y1="150" x2="768" y2="180" stroke="currentColor" marker-end="url(#ah)"/>
+
+      <!-- entry points note: routed below the flow so it does not cross data arrows -->
+      <line x1="825" y1="186" x2="825" y2="352" stroke="currentColor" stroke-dasharray="3 3"/>
+      <line x1="825" y1="352" x2="60" y2="352" stroke="currentColor" stroke-dasharray="3 3"/>
+      <line x1="60" y1="352" x2="60" y2="200" stroke="currentColor" stroke-dasharray="3 3"/>
+      <line x1="60" y1="200" x2="60" y2="186" stroke="currentColor" stroke-dasharray="3 3" marker-end="url(#ah)"/>
+      <text x="455" y="346" text-anchor="middle" font-size="10" fill="#8a8f98">pytest and the dashboard drive the same MetricSpec catalog</text>
+
+      <text x="20" y="395" font-size="11" fill="#8a8f98">Solid = data flow.   Orange = the judge loop (a second, different LLM).   Dashed = shared control path.</text>
+      <text x="20" y="416" font-size="11" fill="#8a8f98">retrieval_context is only populated by RagTarget — that is what the three retrieval metrics score.</text>
+    </svg>
+    <figcaption>One metric evaluation: a dataset case is sent to the target app,
+    its reply is packed into a test case, and a separate judge LLM scores that
+    case against a rubric or reference. The score vs. the metric's threshold is
+    the verdict.</figcaption>
+  </figure>
+
+  <h2>The two targets</h2>
+  <table>
+    <tr><th>Target</th><th>Port</th><th>Client</th><th>Returns</th></tr>
+    <tr><td>ShopSphere chatbot (Subsystem A)</td><td>8201</td><td><code>ChatbotTarget</code></td><td>reply</td></tr>
+    <tr><td>RAG Explorer (Subsystem B)</td><td>8202</td><td><code>RagTarget</code></td><td>reply + <code>retrieval_context</code> (chunks labelled <code>[source] text</code>)</td></tr>
+  </table>
+  <p>Most metrics run against <strong>both</strong>. The dashboard's Target
+  selector and the <code>@pytest.mark.rag</code> / <code>@pytest.mark.chatbot</code>
+  markers pick which.</p>
+
+  <h2>The 25 metrics, by category</h2>
+  <table>
+    <tr><th>Category</th><th>Metrics</th></tr>
+    <tr><td>quality</td><td>Answer Relevancy · Faithfulness · Hallucination</td></tr>
+    <tr><td>retrieval</td><td>Contextual Precision · Contextual Recall · Contextual Relevancy <span class="accent">(RAG only)</span></td></tr>
+    <tr><td>g-eval</td><td>Correctness · No Prompt Leak · Citation · Summarization · Helpfulness</td></tr>
+    <tr><td>safety</td><td>Bias · Toxicity · PII Leakage · RAG Safety · Prompt Injection · Jailbreak · Obfuscation · Exfiltration · Social Engineering · Misuse · Regulated Advice · Role Adherence</td></tr>
+    <tr><td>conversational</td><td>Conversation Completeness · Knowledge Retention <span class="accent">(multi-turn)</span></td></tr>
+  </table>
+  <p>Score direction is not uniform in DeepEval 4.x. For the 4.x safety metrics
+  and the G-Eval rubrics, <strong>1.0 is good</strong> and the threshold is the
+  minimum passing score. The framework normalises this so a green card always
+  means "the app behaved well".</p>
+
+  <h2>Why the judge is a different model</h2>
+  <p>The chatbot and RAG bot answer with <code>qwen/qwen3.8-27b</code>. The judge
+  is <code>openai/gpt-oss-120b</code>. Both are on Groq's OpenAI-compatible
+  endpoint, wrapped as a DeepEval <code>LocalModel</code>. A judge grading its
+  own family systematically over-rates those answers, so the subject and the
+  judge are deliberately kept in different families.</p>
+
+  <h2>Running it</h2>
+  <p>The chatbot (8201) and RAG Explorer (8202) must be up first.</p>
+  <pre><code># dashboard — one card per metric, Run on demand
+uvicorn dashboard.app:app --port 8203        # http://localhost:8203
+
+# headless — same specs, no pytest
+python -m dashboard.runner --target rag --limit 2
+python -m dashboard.runner --keys correctness role_violation
+
+# pytest
+pytest                    # all 263 cases
+pytest -m "rag and not slow"
+pytest tests/rag/test_00_smoke.py            # no-LLM wiring check</code></pre>
+  <p>Groq's free tier rate-limits hard, so the runner spaces judge calls
+  (<code>EVAL_CASE_DELAY</code>) and backs off once on a 429
+  (<code>EVAL_RATE_BACKOFF</code>).</p>
+
+  <h2>This page</h2>
+  <p>Static, generated alongside the <a href="./index.html">dashboard
+  snapshot</a> by <code>python -m dashboard.build_static</code>. The live
+  dashboard is interactive and local-only — it needs the two target apps, the
+  Groq key, and background threads that a static host cannot provide.</p>
+</div>
+</body>
+</html>

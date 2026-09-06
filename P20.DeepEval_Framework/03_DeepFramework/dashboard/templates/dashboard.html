@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepEval Dashboard</title>
+<style>
+  :root{
+    --bg:#f4f3ef; --panel:#fbfaf8; --card:#fff; --ink:#20242c; --muted:#6d7480;
+    --line:#e7e4dd; --accent:#d05a33; --accent-ink:#fff;
+    --pass:#1c8a4e; --pass-bg:#e4f4ec; --fail:#c0392b; --fail-bg:#fbe9e7;
+    --pend:#9aa0a6; --pend-bg:#eceae5; --head:#22252c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:inherit}
+  header{background:var(--head);color:#f4f3ef;padding:14px 22px;display:flex;
+    align-items:center;gap:14px;flex-wrap:wrap}
+  header .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;transform:rotate(45deg)}
+  header .logo i{width:11px;height:11px;background:#fff;border-radius:2px}
+  header h1{font-size:17px;margin:0;font-weight:650}
+  header .tag{font-size:12px;color:#b9bcc4}
+  header .controls{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .ctl{display:flex;flex-direction:column;gap:3px}
+  .ctl label{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#9aa0a6}
+  select,input[type=text]{background:#2d313a;color:#f4f3ef;border:1px solid #3c414c;
+    border-radius:7px;padding:6px 9px;font-size:13px}
+  button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;
+    padding:8px 15px;font-size:13px;cursor:pointer;font-weight:600}
+  button.ghost{background:#2d313a;color:#f4f3ef;border:1px solid #3c414c;font-weight:500}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  main{max-width:1180px;margin:0 auto;padding:20px 22px 60px}
+  .statusbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:11px 15px;flex:1;min-width:190px}
+  .scard .k{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .scard .v{font-size:13px;margin-top:2px;font-family:ui-monospace,Menlo,monospace}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--pend)}
+  .dot.up{background:var(--pass)} .dot.down{background:var(--fail)}
+  .counts{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .pill{padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .pill.p{background:var(--pass-bg);color:var(--pass)}
+  .pill.f{background:var(--fail-bg);color:var(--fail)}
+  .pill.n{background:var(--pend-bg);color:#6b7079}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
+  .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+    padding:5px 13px;font-size:12px;cursor:pointer;text-transform:capitalize}
+  .tab.on{background:var(--head);color:#f4f3ef;border-color:var(--head)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 15px;display:flex;flex-direction:column;gap:8px}
+  .mcard .chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;
+    border-radius:5px;background:#efece6;color:#6b7079;font-weight:700}
+  .chip.cat-quality{background:#e5eef8;color:#2f6bb0}
+  .chip.cat-retrieval{background:#e7f1ec;color:#2f855a}
+  .chip.cat-safety{background:#fdeee6;color:#c0632b}
+  .chip.cat-geval{background:#f0e9f6;color:#7a4bb0}
+  .chip.cat-conversational{background:#e9eef0;color:#4a6b78}
+  .chip.tgt{background:#eee;color:#777}
+  .mcard .thr{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .mcard h3{margin:0;font-size:15px}
+  .mcard .desc{font-size:12.5px;color:var(--muted);min-height:32px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:12px}
+  .box .verline{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .verdict{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 7px;border-radius:5px;background:var(--pend-bg);color:#6b7079}
+  .verdict.pass{background:var(--pass-bg);color:var(--pass)}
+  .verdict.fail{background:var(--fail-bg);color:var(--fail)}
+  .verdict.error{background:#fdeede;color:#8a6d1d}
+  .verdict.running{background:#e5eef8;color:#2f6bb0}
+  .score{font-weight:700;font-variant-numeric:tabular-nums}
+  .sample{color:#7b818b;font-style:italic}
+  .avail{font-size:11px;color:#9aa0a6;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+  .mcard .actions{display:flex;gap:8px;align-items:center}
+  .mcard .actions button{padding:7px 14px}
+  .mcard .actions .det{background:none;color:var(--accent);border:0;font-weight:600;padding:7px 4px}
+  .details{border-top:1px dashed var(--line);padding-top:8px;display:none;flex-direction:column;gap:7px}
+  .details.open{display:flex}
+  .caserow{font-size:11.5px;border-left:3px solid var(--line);padding:3px 0 3px 8px}
+  .caserow.pass{border-color:var(--pass)} .caserow.fail{border-color:var(--fail)}
+  .caserow.error{border-color:#c9a227}
+  .caserow .q{color:var(--ink);font-weight:600}
+  .caserow .r{color:#7b818b;white-space:pre-wrap}
+  .caserow .why{color:#575d66;margin-top:2px}
+  .spin{width:12px;height:12px;border:2px solid #cdd2da;border-top-color:var(--accent);
+    border-radius:50%;display:inline-block;animation:s .7s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  footer{max-width:1180px;margin:0 auto;padding:0 22px 40px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><i></i></div>
+  <div>
+    <h1>DeepEval Dashboard</h1>
+    <div class="tag">Live metric runs against the chatbot and RAG pipeline</div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><label>Target</label>
+      <select id="target">
+        <option value="chatbot">Chatbot (A) · :8201</option>
+        <option value="rag">RAG Explorer (B) · :8202</option>
+      </select>
+    </div>
+    <div class="ctl"><label>Cases per run</label>
+      <select id="limit">
+        <option value="1">1 case</option>
+        <option value="2">2 cases</option>
+        <option value="3">3 cases</option>
+        <option value="5">5 cases</option>
+      </select>
+    </div>
+    <div class="ctl"><label>Judge model</label>
+      <input type="text" id="judge" value="{{ judge }}" readonly style="width:170px">
+    </div>
+    <button class="ghost" id="refresh">Refresh status</button>
+    <button id="runall">▶ Run all visible</button>
+  </div>
+</header>
+
+<main>
+  <div class="statusbar">
+    <div class="scard">
+      <div class="k"><span class="dot" id="d-chatbot"></span> Chatbot (A)</div>
+      <div class="v">{{ status.chatbot_url }}</div>
+    </div>
+    <div class="scard">
+      <div class="k"><span class="dot" id="d-rag"></span> RAG Explorer (B)</div>
+      <div class="v">{{ status.rag_url }}</div>
+    </div>
+    <div class="scard">
+      <div class="k"><span class="dot up"></span> Judge</div>
+      <div class="v">groq · {{ judge }}</div>
+    </div>
+    <div class="scard counts" style="flex:0 0 auto;align-items:center">
+      <span class="k" style="margin-right:4px">pass · fail · pending</span>
+      <span class="pill p" id="c-pass">0</span>
+      <span class="pill f" id="c-fail">0</span>
+      <span class="pill n" id="c-pend">0</span>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <span class="tab on" data-cat="all">all</span>
+    {% for c in categories %}<span class="tab" data-cat="{{ c }}">{{ c }}</span>{% endfor %}
+  </div>
+
+  <div class="grid" id="grid">
+    {% for s in specs %}
+    <div class="mcard" data-key="{{ s.key }}" data-cat="{{ s.category }}"
+         data-targets="{{ s.targets|join(',') }}">
+      <div class="chips">
+        <span class="chip cat-{{ s.category }}">{{ s.category }}</span>
+        {% for t in s.targets %}<span class="chip tgt">{{ 'chatbot' if t=='chatbot' else 'rag' }}</span>{% endfor %}
+        <span class="thr">&ge; {{ '%.2f'|format(s.threshold) }}</span>
+      </div>
+      <h3>{{ s.title }}</h3>
+      <div class="desc">{{ s.blurb }}</div>
+      <div class="box">
+        <div class="verline">
+          <span class="verdict" data-verdict>not run</span>
+          <span class="score" data-score></span>
+        </div>
+        <div class="sample" data-sample>{{ s.sample_input }}</div>
+        <div class="avail" data-avail>{{ s.case_count }} cases · {{ s.test_file }}</div>
+      </div>
+      <div class="actions">
+        <button data-run>▶ Run</button>
+        <button class="det" data-toggle>Details</button>
+      </div>
+      <div class="details" data-details></div>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+
+<footer>
+  DeepEval 4.2.1 · one card per metric · judge ≠ target on purpose ·
+  P20.DeepEval_Framework / 03_DeepFramework
+</footer>
+
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const targetSel = $('#target'), limitSel = $('#limit');
+let polling = null;
+
+function fmtScore(v){ return v==null ? '' : Number(v).toFixed(2); }
+
+function applyRun(card, rec){
+  const v = $('[data-verdict]', card), sc = $('[data-score]', card),
+        det = $('[data-details]', card), avail = $('[data-avail]', card);
+  const status = rec.status, verdict = rec.verdict;
+  let label = 'not run', cls = '';
+  if (status === 'running'){ label = 'running'; cls = 'running'; }
+  else if (verdict){ label = verdict; cls = verdict; }
+  else if (status === 'error'){ label = 'error'; cls = 'error'; }
+  v.className = 'verdict ' + cls;
+  v.innerHTML = (status==='running' ? '<span class="spin"></span> ' : '') + label;
+  sc.textContent = fmtScore(rec.avg_score);
+  if (rec.passed!=null || rec.failed!=null || rec.errored!=null)
+    avail.textContent = `${rec.passed||0} pass · ${rec.failed||0} fail · ${rec.errored||0} err`
+      + (rec.threshold!=null ? `  (≥ ${Number(rec.threshold).toFixed(2)})` : '');
+  det.innerHTML = (rec.cases||[]).map(c => {
+    const k = c.error ? 'error' : (c.passed ? 'pass' : 'fail');
+    return `<div class="caserow ${k}">
+      <div class="q">${esc(c.input||'')} ${c.score!=null?`· <b>${fmtScore(c.score)}</b>`:''}</div>
+      ${c.reply?`<div class="r">${esc(c.reply.slice(0,240))}</div>`:''}
+      ${c.error?`<div class="why" style="color:#a9711d">${esc(c.error.slice(0,240))}</div>`
+               :(c.reason?`<div class="why">${esc(c.reason.slice(0,260))}</div>`:'')}
+    </div>`;
+  }).join('') || '<div class="caserow">no cases yet</div>';
+}
+function esc(s){ return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+async function refresh(){
+  const st = await (await fetch('/api/status')).json();
+  $('#d-chatbot').className = 'dot ' + (st.chatbot_up ? 'up':'down');
+  $('#d-rag').className = 'dot ' + (st.rag_up ? 'up':'down');
+  $('#c-pass').textContent = st.counts.pass;
+  $('#c-fail').textContent = st.counts.fail;
+  $('#c-pend').textContent = st.counts.pending + (st.counts.error?('+'+st.counts.error+'e'):'');
+  $$('.mcard').forEach(card => {
+    const key = card.dataset.key;
+    let rec = null;
+    card.dataset.targets.split(',').forEach(t => { rec = st.runs[t+':'+key] || rec; });
+    if (rec) applyRun(card, rec);
+    const running = st.running.includes(key);
+    $('[data-run]', card).disabled = running;
+  });
+  const busy = st.running.length || st.batch.active;
+  $('#runall').disabled = !!st.batch.active;
+  $('#runall').textContent = st.batch.active
+    ? `running ${st.batch.done}/${st.batch.total}…` : '▶ Run all visible';
+  if (busy && !polling) polling = setInterval(refresh, 3000);
+  if (!busy && polling){ clearInterval(polling); polling = null; }
+}
+
+async function runOne(key){
+  await fetch('/api/run/'+key, {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({target: targetSel.value, limit: +limitSel.value})});
+  refresh(); if (!polling) polling = setInterval(refresh, 3000);
+}
+
+$('#grid').addEventListener('click', e => {
+  const card = e.target.closest('.mcard'); if (!card) return;
+  if (e.target.matches('[data-run]')) runOne(card.dataset.key);
+  if (e.target.matches('[data-toggle]')) $('[data-details]', card).classList.toggle('open');
+});
+
+$('#runall').addEventListener('click', async () => {
+  const keys = $$('.mcard').filter(c => c.style.display !== 'none').map(c => c.dataset.key);
+  await fetch('/api/run-all', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({keys, target: targetSel.value, limit: +limitSel.value})});
+  refresh(); if (!polling) polling = setInterval(refresh, 3000);
+});
+
+$('#refresh').addEventListener('click', refresh);
+
+$('#tabs').addEventListener('click', e => {
+  if (!e.target.matches('.tab')) return;
+  $$('.tab').forEach(t => t.classList.toggle('on', t === e.target));
+  const cat = e.target.dataset.cat;
+  $$('.mcard').forEach(c => {
+    c.style.display = (cat === 'all' || c.dataset.cat === cat) ? '' : 'none';
+  });
+});
+
+function filterByTarget(){
+  const t = targetSel.value;
+  $$('.mcard').forEach(c => {
+    const ok = c.dataset.targets.split(',').includes(t);
+    c.dataset.hideTarget = ok ? '' : '1';
+    if (!ok) c.style.display = 'none';
+    else if (c.dataset.hideTarget !== '1') {
+      const activeCat = $('.tab.on').dataset.cat;
+      c.style.display = (activeCat === 'all' || c.dataset.cat === activeCat) ? '' : 'none';
+    }
+  });
+}
+targetSel.addEventListener('change', filterByTarget);
+
+filterByTarget();
+refresh();
+</script>
+</body>
+</html>

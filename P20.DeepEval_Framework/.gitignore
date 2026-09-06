@@ -1,0 +1,28 @@
+# Secrets — only *.sample / *.example are tracked
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# DeepEval / ChromaDB / generated eval output
+.deepeval/
+.deepeval-cache/
+chroma_db/
+03_DeepFramework/dashboard/results.json
+
+# RAG Explorer user uploads (not part of the project)
+02_RAG_Explorer/**/data/uploads/
+
+# Node
+node_modules/
+dist/
+
+# Screenshots / scratch
+*.png
+!**/docs/*.png
