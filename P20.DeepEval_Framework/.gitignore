@@ -23,6 +23,9 @@ chroma_db/
 node_modules/
 dist/
 
+# Vercel
+.vercel/
+
 # Screenshots / scratch
 *.png
 !**/docs/*.png
