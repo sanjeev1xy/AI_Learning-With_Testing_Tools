@@ -113,14 +113,17 @@ build log.
 
 ## Sharing the dashboard
 
-The live dashboard is local-only — it needs A and B running, the Groq key, and
-background threads. `python -m dashboard.build_static` bakes a read-only
-snapshot (the 25 cards + the latest `results.json`, no Run buttons) into
-`03_DeepFramework/dashboard-static/`, ready to deploy:
+Live snapshot: **<https://dashboard-static-psi-nine.vercel.app>**
+(read-only — one recorded run; the Run buttons are disabled).
+
+The interactive dashboard is local-only — it needs A and B running, the Groq
+key, and background threads. `python -m dashboard.build_static` bakes a
+read-only snapshot (the 25 cards + the latest `results.json`) into
+`03_DeepFramework/dashboard-static/`, then:
 
 ```bash
 cd 03_DeepFramework/dashboard-static
-vercel login && vercel deploy
+vercel deploy --prod        # redeploys to the URL above
 ```
 
 ---
