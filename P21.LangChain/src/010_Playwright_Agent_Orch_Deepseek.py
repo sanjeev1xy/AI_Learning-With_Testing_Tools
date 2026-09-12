@@ -2,18 +2,18 @@ import asyncio
 import sys
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain_deepseek import ChatDeepSeek
+from langchain_groq import ChatGroq
 from playwright_tools import PLAYWRIGHT_TOOLS
 import os
 
 sys.stdout.reconfigure(encoding="utf-8")  # Windows console default (cp1252) can't print LLM output
 load_dotenv()
 
-# The .env calls the key DEEPSEEK_API, but the SDK looks for DEEPSEEK_API_KEY,
-# so it has to be passed in explicitly.
-llm = ChatDeepSeek(
-    model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
-    api_key=os.environ["DEEPSEEK_API"],
+# DEEPSEEK_API in .env has no balance (402 Insufficient Balance from DeepSeek), so this
+# runs on Groq instead - swap back to ChatDeepSeek once that key is funded.
+llm = ChatGroq(
+    model=os.environ["LLM_Model"],
+    groq_api_key=os.environ["Sanjeev_LangChain_Groq_API_KEY"],
     temperature=0,
 )
 
