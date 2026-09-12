@@ -1,5 +1,6 @@
 n13 = 153
 temp13 = n13
+rem13=0
 rev13 = 0
  
 while n13 > 0:

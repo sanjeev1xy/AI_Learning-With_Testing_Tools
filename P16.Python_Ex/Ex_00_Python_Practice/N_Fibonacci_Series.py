@@ -1,6 +1,7 @@
 n4 = 5
 a2 = 0
 b2 = 1
+c2=0
  
 print("Fibonacci numbers are : ")
 print(f"{a2} {b2}")

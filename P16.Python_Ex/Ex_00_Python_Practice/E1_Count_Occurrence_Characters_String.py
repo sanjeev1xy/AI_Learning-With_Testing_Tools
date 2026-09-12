@@ -1,5 +1,6 @@
 # O/P: S=1 a=1 n=1 j=1 e=2 v=1
  
+#str5 = "My name is Sanjeev";  # This is also working
 str5 = "Sanjeev"
 count5 = {}
  
