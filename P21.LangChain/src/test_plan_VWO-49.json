@@ -1,0 +1,110 @@
+{
+  "ticket_key": "VWO-49",
+  "scope": "Login flow validation and post‑login UI elements",
+  "risks": [
+    "None identified"
+  ],
+  "coverage_gap": "Header title and shopping cart icon visibility after successful login are not covered by existing test cases.",
+  "test_cases": [
+    {
+      "id": "TC-01",
+      "title": "Validate successful login redirects to Products page",
+      "priority": "P1",
+      "steps": [
+        "Navigate to https://app.thetestingacademy.com/playwright/ttacart/",
+        "Enter username 'standard_user' in the username field",
+        "Enter password 'tta_secret' in the password field",
+        "Click the 'Login' button"
+      ],
+      "expected_result": "User is redirected to the Products (inventory) page",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "duplicate",
+      "related_existing_ids": [
+        "TTA-001"
+      ]
+    },
+    {
+      "id": "TC-02",
+      "title": "Verify Products page header displays correct title",
+      "priority": "P1",
+      "steps": [
+        "After successful login, locate the header element on the Products page",
+        "Read the text content of the header"
+      ],
+      "expected_result": "Header displays the text 'Products'",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "new",
+      "related_existing_ids": []
+    },
+    {
+      "id": "TC-03",
+      "title": "Confirm shopping cart icon is visible after login",
+      "priority": "P1",
+      "steps": [
+        "After successful login, locate the shopping cart icon in the header",
+        "Check that the icon is displayed and not hidden"
+      ],
+      "expected_result": "Shopping cart icon is visible",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "new",
+      "related_existing_ids": []
+    },
+    {
+      "id": "TC-04",
+      "title": "Login fails with incorrect password and shows inline error",
+      "priority": "P1",
+      "steps": [
+        "Navigate to https://app.thetestingacademy.com/playwright/ttacart/",
+        "Enter username 'standard_user' in the username field",
+        "Enter password 'wrong_password' in the password field",
+        "Click the 'Login' button"
+      ],
+      "expected_result": "Inline error message is displayed and user remains on the login page",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "duplicate",
+      "related_existing_ids": [
+        "TTA-003"
+      ]
+    },
+    {
+      "id": "TC-05",
+      "title": "Prevent login submission with empty username field",
+      "priority": "P1",
+      "steps": [
+        "Navigate to https://app.thetestingacademy.com/playwright/ttacart/",
+        "Leave username field empty",
+        "Enter password 'tta_secret' in the password field",
+        "Attempt to click the 'Login' button"
+      ],
+      "expected_result": "Login button is disabled or submission is blocked and an inline error appears",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "duplicate",
+      "related_existing_ids": [
+        "TTA-004"
+      ]
+    },
+    {
+      "id": "TC-06",
+      "title": "Prevent login submission with empty password field",
+      "priority": "P1",
+      "steps": [
+        "Navigate to https://app.thetestingacademy.com/playwright/ttacart/",
+        "Enter username 'standard_user' in the username field",
+        "Leave password field empty",
+        "Attempt to click the 'Login' button"
+      ],
+      "expected_result": "Login button is disabled or submission is blocked and an inline error appears",
+      "automatable": true,
+      "reason_if_not": "",
+      "rag_relation": "duplicate",
+      "related_existing_ids": [
+        "TTA-005"
+      ]
+    }
+  ]
+}

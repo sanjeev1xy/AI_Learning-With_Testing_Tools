@@ -1,0 +1,8 @@
+{
+  "key": "VWO-49",
+  "summary": "Login flow should validate credentials and land user on Products page",
+  "description": "As a shopper, I want to log in with my username and password so that I can browse products and place an order.\n\nAcceptance Criteria:\n- Given valid credentials (standard_user / tta_secret), when I submit the login form, then I am redirected to the Products (inventory) page.\n- The Products page header shows the correct page title.\n- The shopping cart icon is visible in the header after login.\n- Given an incorrect password, when I submit the login form, then an inline error message is shown and I remain on the login page.\n- The login form must not allow submission with an empty username or empty password field.",
+  "status": "In Progress",
+  "issuetype": "Story",
+  "priority": "P1"
+}
