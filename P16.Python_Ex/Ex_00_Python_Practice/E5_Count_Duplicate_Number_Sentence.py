@@ -1,11 +1,11 @@
-# output: 1=5, 2=4, 3=2, 7=3, 8=2
+# output: 
+# -1 = 2
+# 0 = 2
  
-arr8 = "My Name 1112223 is 77889 Sanjeev 76543112"
+arr8=[1,2,3,4,5,6,-1,-5,0,-1,0];
 count8 = {}
  
 for num in arr8:
-    if not num.isdigit():
-        continue
     if num in count8:
         count8[num] += 1
     else:

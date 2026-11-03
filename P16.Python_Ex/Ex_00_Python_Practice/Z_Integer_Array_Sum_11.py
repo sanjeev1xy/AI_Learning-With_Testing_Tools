@@ -8,5 +8,6 @@ for i in range(len(intarr1)):
     for j in range(len(intarr1)):
         if intarr1[i] + intarr1[j] == target1:
             print(f"{intarr1[i]} + {intarr1[j]} = {target1}");
+            #print(f"({intarr1[i]},{intarr1[j]})");
             intarr1[j]=-1;
             break;

@@ -1,8 +1,9 @@
-arr=["kiwi","sweet","fig"," ","orange","banana"," "];
+#arr=["kiwi","sweet","fig"," ","orange","banana"," "];
+arr= ["Fig", " ", "Kiwi", "orange", "banana", "Apple", " "]; 
 
 for i in range(len(arr)):
   for j in range(i+1,len(arr)):
-    if arr[i]>arr[j]:
+    if arr[i]>arr[j]:   # This works for separate small letters, separate capital letters, and mixed small + capital letters.
       t=arr[i];
       arr[i]=arr[j];
       arr[j]=t;
